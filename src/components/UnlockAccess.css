@@ -1,0 +1,180 @@
+/* Main container */
+.unlock-container {
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Page title */
+.unlock-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+/* Card styles */
+.unlock-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.unlock-card h2,
+.unlock-card h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+/* Instructions */
+.instructions-list {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.instructions-list li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+/* Important note */
+.important-note {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin-top: 15px;
+  color: #856404;
+}
+
+/* Pin input form */
+.pin-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  text-align: center;
+  margin-bottom: 15px;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  font-family: monospace;
+  letter-spacing: 2px;
+}
+
+.pin-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.pin-input:disabled {
+  background-color: #ecf0f1;
+  cursor: not-allowed;
+}
+
+/* Banking details */
+.banking-details {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 15px;
+}
+
+.banking-details p {
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.banking-details strong {
+  color: #2c3e50;
+}
+
+/* File upload */
+.file-upload {
+  margin-bottom: 15px;
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #bdc3c7;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+}
+
+.file-upload:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Button styles */
+.unlock-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+  transition: background-color 0.3s ease;
+}
+
+.unlock-button:hover:not(:disabled) {
+  background-color: #2980b9;
+}
+
+.unlock-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.cta-button {
+  background-color: #27ae60;
+}
+
+.cta-button:hover:not(:disabled) {
+  background-color: #219653;
+}
+
+/* Error message */
+.pin-error {
+  color: #e74c3c;
+  text-align: center;
+  padding: 10px;
+  background-color: #fdedec;
+  border-radius: 5px;
+  margin-top: 10px;
+  display: none;
+}
+
+.pin-error.show {
+  display: block;
+}
+
+/* Contact admin message */
+.contact-admin {
+  background-color: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: center;
+  color: #856404;
+}
+
+.contact-admin a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.contact-admin a:hover {
+  text-decoration: underline;
+}
+
+/* Loading state */
+.verifying {
+  opacity: 0.7;
+  pointer-events: none;
+}

@@ -1,0 +1,430 @@
+/* HomePage Specific Styles */
+.homepage {
+  min-height: 100vh;
+}
+
+/* Header Section */
+.header-section {
+  /* background-image removed — set from JSX to avoid css-loader resolution issues */
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 20px 0;
+  position: relative;
+}
+
+.header-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.header-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.3s;
+  font-size: 0.9rem;
+}
+
+.nav-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Date and Time Section */
+.datetime-section {
+  text-align: center;
+  padding: 20px 0;
+  background: white;
+  margin: 20px 0;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.date-display {
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
+}
+
+.time-display {
+  color: #e74c3c;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* Lotto Sections */
+.lotto-section {
+  /* background-image removed — set from JSX to avoid css-loader resolution issues */
+  background-size: cover;
+  background-position: center;
+  padding: 40px 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.lotto-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+.section-title {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.draw-time {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.lotto-balls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 20px 0;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+
+.lotto-ball {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30px 30px, #ff6b6b, #c1121f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid white;
+}
+
+.lotto-ball.separate {
+  margin-left: 30px;
+  background: radial-gradient(circle at 30px 30px, #4ecdc4, #1a535c);
+}
+
+.status-text {
+  text-align: center;
+  font-size: 1.2rem;
+  margin-top: 10px;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+  color: white;
+}
+
+/* CTA Sections */
+.cta-section {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.contact-section {
+  text-align: center;
+  margin: 40px 0;
+}
+
+.main-cta {
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #000;
+  font-size: 1.2rem;
+  padding: 15px 30px;
+}
+
+.whatsapp-button {
+  background: linear-gradient(45deg, #25D366, #128C7E);
+  color: white;
+  padding: 15px 30px;
+}
+
+.cta-button {
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border-radius: 25px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  transition: transform 0.3s, box-shadow 0.3s;
+  font-weight: bold;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Results Section */
+.results-section {
+  text-align: center;
+  margin: 40px 0;
+  padding: 30px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: white;
+}
+
+.results-title {
+  color: white;
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+}
+
+.results-description {
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.results-button {
+  background-color: #ffffff;
+  color: #764ba2;
+  border: none;
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.results-button:hover {
+  background-color: #f8f9fa;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Help Section */
+.help-section {
+  background: #f8f9fa;
+  padding: 30px;
+  border-radius: 10px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.help-section h3 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}
+
+.help-contact, .email-contact {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+.whatsapp-link {
+  color: #25D366;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.whatsapp-link:hover {
+  color: #128C7E;
+}
+
+/* Carousel Section */
+.carousel-section {
+  margin: 40px 0;
+}
+
+.carousel {
+  width: 100%;
+  height: 400px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carousel-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ecf0f1;
+  color: #7f8c8d;
+  font-size: 1.2rem;
+}
+
+/* ID Card Section */
+.id-card-section {
+  text-align: center;
+  margin: 40px 0;
+  padding: 30px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.id-card-image {
+  max-width: 300px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.id-card-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.id-card-description {
+  line-height: 1.6;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .nav-buttons {
+    justify-content: center;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+  
+  .lotto-ball {
+    width: 60px;
+    height: 60px;
+    font-size: 1.2rem;
+  }
+  
+  .lotto-ball.separate {
+    margin-left: 15px;
+  }
+  
+  .date-display {
+    font-size: 1.2rem;
+  }
+  
+  .time-display {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.2rem;
+  }
+  
+  .carousel {
+    height: 300px;
+  }
+  
+  .id-card-image {
+    max-width: 250px;
+  }
+  
+  .id-card-description {
+    font-size: 1rem;
+  }
+  
+  .results-title {
+    font-size: 1.5rem;
+  }
+  
+  .results-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .lotto-ball {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+  }
+  
+  .cta-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .carousel {
+    height: 250px;
+  }
+  
+  .results-section {
+    padding: 20px 15px;
+  }
+}
