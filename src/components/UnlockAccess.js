@@ -131,7 +131,7 @@ const UnlockAccess = () => {
           <h2>Instructions</h2>
           <p>To unlock access to the winning numbers:</p>
           <ol className="instructions-list">
-            <li>Make a payment of R300.</li>
+            <li>Make a payment of R300 to the account details below.</li>
             <li>
               After payment, send a message on WhatsApp to the Admin/Agent at:
               <br />
