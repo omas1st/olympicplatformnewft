@@ -143,15 +143,15 @@ const AdminUserInfo = () => {
   };
 
   const planOptions = [
-    '3 days lunchtime',
-    '3 days teatime',
-    '3 days lunchtime and teatime',
-    '5 days lunchtime',
-    '5 days teatime',
-    '5 days lunchtime and teatime',
-    '7 days lunchtime',
-    '7 days teatime',
-    '7 days lunchtime and teatime'
+    '1 Day - (3 numbers + bonus lunchtime only) - R700',
+    '1 Day - (3 numbers + bonus teatime only) - R700',
+    '1 Day - (4 numbers + bonus - Powerball) - R1000',
+    '3 Days - (3 numbers + bonus lunchtime) - R2000',
+    '3 Days - (3 numbers + bonus teatime) - R2000',
+    '7 Days - (3 numbers + bonus lunchtime) - R4500',
+    '7 Days - (3 numbers + bonus teatime) - R4500',
+    '4 numbers (Russian Goslotto) - R700',
+    '7 days lunchtime and teatime - R2000'
   ];
 
   return (
