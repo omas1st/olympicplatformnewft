@@ -10,6 +10,9 @@ const UnlockAccess = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const navigate = useNavigate();
 
+  // Get API URL from environment variables (same as UserDashboard)
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const handlePinSubmit = async (e) => {
     e.preventDefault();
     setPinError('');
@@ -23,8 +26,8 @@ const UnlockAccess = () => {
         return;
       }
 
-      // Call the verify-pin endpoint
-      const response = await axios.post('http://localhost:5000/api/user/verify-pin', 
+      // Use environment variable for API URL
+      const response = await axios.post(`${API_URL}/api/user/verify-pin`, 
         { pin: pin.trim() }, 
         {
           headers: { 
@@ -68,7 +71,7 @@ const UnlockAccess = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/user/upload-proof', formData, {
+      await axios.post(`${API_URL}/api/user/upload-proof`, formData, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
