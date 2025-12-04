@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import api from '../config/api';
@@ -14,6 +14,23 @@ const HomePage = () => {
     powerball: ['00', '00', '00', '00']
   });
   const [carouselImages, setCarouselImages] = useState([]);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prevSlide) => 
+      prevSlide === carouselImages.length - 1 ? 0 : prevSlide + 1
+    );
+  }, [carouselImages.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prevSlide) => 
+      prevSlide === 0 ? carouselImages.length - 1 : prevSlide - 1
+    );
+  }, [carouselImages.length]);
+
+  const goToSlide = useCallback((index) => {
+    setCurrentSlide(index);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -25,6 +42,16 @@ const HomePage = () => {
     
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-advance carousel every 5 seconds
+  useEffect(() => {
+    if (carouselImages.length > 1) {
+      const interval = setInterval(() => {
+        nextSlide();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [carouselImages.length, nextSlide]);
 
   const fetchWinningNumbers = async () => {
     try {
@@ -39,6 +66,7 @@ const HomePage = () => {
     try {
       const response = await api.get('/carousel');
       setCarouselImages(response.data);
+      setCurrentSlide(0); // Reset to first slide when new images load
     } catch (error) {
       console.error('Error fetching carousel images:', error);
     }
@@ -199,27 +227,71 @@ const HomePage = () => {
 
         {/* Carousel Section */}
         <section className="carousel-section">
-  <div className="carousel">
-    {carouselImages.length > 0 ? (
-      carouselImages.map((image, index) => (
-        <div key={image._id} className="carousel-item">
-          <img 
-            src={image.imageUrl} 
-            alt={`Platform carousel ${index + 1}`} 
-            className="carousel-image"
-            onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Available';
-            }}
-          />
-        </div>
-      ))
-    ) : (
-      <div className="carousel-placeholder">
-        <p>No carousel images available</p>
-      </div>
-    )}
-  </div>
-</section>
+          <h2 className="carousel-title">Platform Highlights</h2>
+          <div className="carousel-container">
+            <div className="carousel">
+              {carouselImages.length > 0 ? (
+                <>
+                  <div 
+                    className="carousel-track"
+                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  >
+                    {carouselImages.map((image, index) => (
+                      <div key={image._id} className="carousel-slide">
+                        <img 
+                          src={image.imageUrl} 
+                          alt={`Platform highlight ${index + 1}`} 
+                          className="carousel-image"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/800x400?text=Image+Not+Available';
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Navigation buttons */}
+                  {carouselImages.length > 1 && (
+                    <>
+                      <button 
+                        className="carousel-btn carousel-btn-prev" 
+                        onClick={prevSlide}
+                        aria-label="Previous slide"
+                      >
+                        &#10094;
+                      </button>
+                      <button 
+                        className="carousel-btn carousel-btn-next" 
+                        onClick={nextSlide}
+                        aria-label="Next slide"
+                      >
+                        &#10095;
+                      </button>
+                    </>
+                  )}
+                  
+                  {/* Dots indicator */}
+                  {carouselImages.length > 1 && (
+                    <div className="carousel-dots">
+                      {carouselImages.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`carousel-dot ${index === currentSlide ? 'active' : ''}`}
+                          onClick={() => goToSlide(index)}
+                          aria-label={`Go to slide ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="carousel-placeholder">
+                  <p>No carousel images available</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
 
         {/* Platform ID Card Section */}
         <section className="id-card-section">

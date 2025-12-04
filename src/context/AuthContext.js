@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import api from '../config/api';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -15,26 +15,52 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Define verifyToken with useCallback to avoid infinite re-renders
+  // Get the API URL from environment variables
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const verifyToken = useCallback(async () => {
     try {
-      await api.get('/auth/me');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+      
+      await axios.get(`${API_URL}/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      return true;
     } catch (error) {
+      console.error('Token verification failed:', error);
       logout();
+      return false;
     }
-  }, []);
+  }, [API_URL]);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userData = localStorage.getItem('user');
 
-    if (token && userData) {
-      setUser(JSON.parse(userData));
-      // Verify token is still valid
-      verifyToken();
-    }
-    setLoading(false);
-  }, [verifyToken]); // Added verifyToken to dependency array
+        if (token && userData) {
+          setUser(JSON.parse(userData));
+          // Verify token is still valid
+          await verifyToken();
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, [verifyToken]);
 
   const login = (userData, token) => {
     localStorage.setItem('token', token);
@@ -46,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    // navigate to login - using location to force refresh and clear protected routes
+    // Navigate to login
     window.location.href = '/login';
   };
 
@@ -70,5 +96,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-// Default export kept for backwards compatibility (so imports like `import AuthProvider from '...'` still work)
 export default AuthProvider;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -31,6 +31,8 @@ function App() {
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/unlock-access" element={<UnlockAccess />} />
             <Route path="/vip-membership" element={<VIPMembership />} />
+            {/* Add a catch-all route for undefined paths */}
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
       </Router>
