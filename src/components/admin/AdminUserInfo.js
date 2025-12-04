@@ -11,6 +11,7 @@ const AdminUserInfo = () => {
   const [confirmPin, setConfirmPin] = useState('');
   const [pinMessage, setPinMessage] = useState('');
   const [selectedPlans, setSelectedPlans] = useState({}); // Store plans per user
+  const [searchTerm, setSearchTerm] = useState(''); // For search functionality
 
   useEffect(() => {
     fetchUsers();
@@ -21,11 +22,19 @@ const AdminUserInfo = () => {
     try {
       setLoading(true);
       const response = await api.get('/admin/users');
-      setUsers(response.data);
+      
+      // Sort users by createdAt in descending order (newest first)
+      const sortedUsers = response.data.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.updatedAt || 0);
+        const dateB = new Date(b.createdAt || b.updatedAt || 0);
+        return dateB - dateA; // Newest first
+      });
+      
+      setUsers(sortedUsers);
       
       // Initialize selected plans from user data
       const initialPlans = {};
-      response.data.forEach(user => {
+      sortedUsers.forEach(user => {
         if (user.plans && user.plans.length > 0) {
           initialPlans[user._id] = user.plans[0];
         }
@@ -66,12 +75,24 @@ const AdminUserInfo = () => {
     }
   };
 
-  const handleSetUserPin = async (userId) => {
-    const userPin = prompt(`Enter a PIN for user ${userId}:`);
+  const handleSetUserPin = async (userId, userName) => {
+    const userPin = prompt(`Enter a 5-digit PIN for user ${userName}:`);
     if (userPin) {
+      // Validate PIN format
+      if (userPin.length !== 5 || !/^\d+$/.test(userPin)) {
+        alert('PIN must be exactly 5 digits');
+        return;
+      }
+      
       try {
-        await api.post(`/admin/set-user-pin/${userId}`, { pin: userPin });
-        alert('User PIN set successfully');
+        const response = await api.post(`/admin/set-user-pin/${userId}`, { pin: userPin });
+        if (response.data.success) {
+          alert('User PIN set successfully');
+          // Refresh users to show updated info
+          fetchUsers();
+        } else {
+          alert('Failed to set user PIN: ' + (response.data.message || 'Unknown error'));
+        }
       } catch (error) {
         console.error('Error setting user PIN:', error);
         alert('Failed to set user PIN: ' + (error.response?.data?.message || error.message));
@@ -142,6 +163,21 @@ const AdminUserInfo = () => {
     }
   };
 
+  const handleRefreshUsers = () => {
+    fetchUsers();
+  };
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(user => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      (user.name && user.name.toLowerCase().includes(searchLower)) ||
+      (user.email && user.email.toLowerCase().includes(searchLower)) ||
+      (user.whatsapp && user.whatsapp.includes(searchTerm)) ||
+      (user.country && user.country.toLowerCase().includes(searchLower))
+    );
+  });
+
   const planOptions = [
     '1 Day - (3 numbers + bonus lunchtime only) - R700',
     '1 Day - (3 numbers + bonus teatime only) - R700',
@@ -153,6 +189,19 @@ const AdminUserInfo = () => {
     '4 numbers (Russian Goslotto) - R700',
     '7 days lunchtime and teatime - R2000'
   ];
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <div style={{ padding: '20px' }}>
@@ -268,80 +317,167 @@ const AdminUserInfo = () => {
       )}
 
       {/* Users Table Section */}
-      <div style={{ marginBottom: '20px', color: '#666' }}>
-        Total Users: {users.length}
+      <div style={{ 
+        marginBottom: '20px', 
+        display: 'flex', 
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ color: '#666' }}>
+          Total Users: {users.length} | Showing: {filteredUsers.length}
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              width: '250px'
+            }}
+          />
+          <button 
+            style={{...buttonStyle, backgroundColor: '#3498db'}}
+            onClick={handleRefreshUsers}
+          >
+            Refresh List
+          </button>
+        </div>
       </div>
       
       {loading ? (
-        <div>Loading users...</div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <div style={{ fontSize: '18px', color: '#666' }}>Loading users...</div>
+        </div>
       ) : (
         <>
-          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' }}>
-            <thead>
-              <tr>
-                <th style={tableHeaderStyle}>Name</th>
-                <th style={tableHeaderStyle}>Email</th>
-                <th style={tableHeaderStyle}>WhatsApp</th>
-                <th style={tableHeaderStyle}>Country</th>
-                <th style={tableHeaderStyle}>Current Plan</th>
-                <th style={tableHeaderStyle}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user._id}>
-                  <td style={tableCellStyle}>{user.name}</td>
-                  <td style={tableCellStyle}>{user.email}</td>
-                  <td style={tableCellStyle}>{user.whatsapp}</td>
-                  <td style={tableCellStyle}>{user.country}</td>
-                  <td style={tableCellStyle}>
-                    {user.plans && user.plans.length > 0 ? user.plans[0] : 'No plan'}
-                  </td>
-                  <td style={tableCellStyle}>
-                    <button 
-                      style={{...buttonStyle, backgroundColor: '#3498db'}}
-                      onClick={() => setSelectedUser(user)}
-                    >
-                      Message
-                    </button>
-                    <button 
-                      style={{...buttonStyle, backgroundColor: '#e67e22'}}
-                      onClick={() => handleSetUserPin(user._id)}
-                    >
-                      Set User PIN
-                    </button>
-                    <div style={{ marginTop: '5px' }}>
-                      <select
-                        value={selectedPlans[user._id] || ''}
-                        onChange={(e) => {
-                          const newPlan = e.target.value;
-                          if (newPlan) {
-                            handleSetUserPlan(user._id, newPlan);
-                          }
-                        }}
-                        style={{
-                          padding: '5px',
-                          borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          width: '100%',
-                          marginTop: '5px'
-                        }}
-                      >
-                        <option value="">Select Plan</option>
-                        {planOptions.map((plan, index) => (
-                          <option key={index} value={plan}>{plan}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </td>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white' }}>
+              <thead>
+                <tr>
+                  <th style={tableHeaderStyle}>#</th>
+                  <th style={tableHeaderStyle}>Registered</th>
+                  <th style={tableHeaderStyle}>Name</th>
+                  <th style={tableHeaderStyle}>Email</th>
+                  <th style={tableHeaderStyle}>WhatsApp</th>
+                  <th style={tableHeaderStyle}>Country</th>
+                  <th style={tableHeaderStyle}>Status</th>
+                  <th style={tableHeaderStyle}>Current Plan</th>
+                  <th style={tableHeaderStyle}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user, index) => (
+                  <tr key={user._id} style={{ 
+                    backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9',
+                    borderBottom: '1px solid #eee'
+                  }}>
+                    <td style={{...tableCellStyle, textAlign: 'center', fontWeight: 'bold'}}>
+                      {index + 1}
+                    </td>
+                    <td style={{...tableCellStyle, fontSize: '0.85rem', color: '#666'}}>
+                      {formatDate(user.createdAt)}
+                    </td>
+                    <td style={tableCellStyle}>
+                      <div style={{ fontWeight: '500' }}>{user.name}</div>
+                      {user.personalPin && (
+                        <div style={{ fontSize: '0.8rem', color: '#27ae60', marginTop: '2px' }}>
+                          <strong>PIN:</strong> {user.personalPin}
+                        </div>
+                      )}
+                    </td>
+                    <td style={tableCellStyle}>{user.email}</td>
+                    <td style={tableCellStyle}>{user.whatsapp}</td>
+                    <td style={tableCellStyle}>{user.country}</td>
+                    <td style={tableCellStyle}>
+                      <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        backgroundColor: user.isVerified ? '#d4edda' : '#f8d7da',
+                        color: user.isVerified ? '#155724' : '#721c24'
+                      }}>
+                        {user.isVerified ? 'Verified' : 'Not Verified'}
+                      </span>
+                    </td>
+                    <td style={tableCellStyle}>
+                      {user.plans && user.plans.length > 0 ? (
+                        <div style={{ 
+                          backgroundColor: '#e8f4fc',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          fontSize: '0.85rem'
+                        }}>
+                          {user.plans[0]}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>No plan</span>
+                      )}
+                    </td>
+                    <td style={{...tableCellStyle, minWidth: '250px'}}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                          <button 
+                            style={{...buttonStyle, backgroundColor: '#3498db', flex: 1}}
+                            onClick={() => setSelectedUser(user)}
+                            title="Send message"
+                          >
+                            Message
+                          </button>
+                          <button 
+                            style={{...buttonStyle, backgroundColor: '#e67e22', flex: 1}}
+                            onClick={() => handleSetUserPin(user._id, user.name)}
+                            title="Set personal PIN"
+                          >
+                            Set PIN
+                          </button>
+                        </div>
+                        <div>
+                          <select
+                            value={selectedPlans[user._id] || ''}
+                            onChange={(e) => {
+                              const newPlan = e.target.value;
+                              if (newPlan) {
+                                handleSetUserPlan(user._id, newPlan);
+                              }
+                            }}
+                            style={{
+                              padding: '8px',
+                              borderRadius: '4px',
+                              border: '1px solid #ddd',
+                              width: '100%',
+                              fontSize: '0.85rem',
+                              backgroundColor: '#fff'
+                            }}
+                          >
+                            <option value="">Select Plan</option>
+                            {planOptions.map((plan, index) => (
+                              <option key={index} value={plan}>{plan}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-          {users.length === 0 && !loading && (
-            <div style={{ textAlign: 'center', padding: '20px', color: '#666' }}>
-              No users found
+          {filteredUsers.length === 0 && !loading && (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px', 
+              color: '#666',
+              border: '1px dashed #ddd',
+              borderRadius: '5px',
+              marginTop: '20px'
+            }}>
+              {searchTerm ? 'No users found matching your search' : 'No users found'}
             </div>
           )}
         </>
@@ -349,42 +485,76 @@ const AdminUserInfo = () => {
 
       {selectedUser && (
         <div style={{ 
-          marginTop: '20px', 
-          padding: '20px', 
-          border: '1px solid #ddd',
-          backgroundColor: '#f9f9f9',
-          borderRadius: '5px'
+          position: 'fixed',
+          top: '0',
+          left: '0',
+          right: '0',
+          bottom: '0',
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
         }}>
-          <h3>Send Message to {selectedUser.name}</h3>
-          <textarea 
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            rows="4"
-            placeholder="Type your message here..."
-            style={{ 
-              width: '100%', 
-              marginBottom: '10px', 
-              padding: '10px',
-              border: '1px solid #ddd',
-              borderRadius: '4px'
-            }}
-          />
-          <div>
-            <button 
-              style={{...buttonStyle, backgroundColor: '#27ae60'}}
-              onClick={() => handleMessageSend(selectedUser._id)}
-            >
-              Send Message
-            </button>
-            <button 
-              style={{...buttonStyle, backgroundColor: '#95a5a6'}}
-              onClick={() => {
-                setSelectedUser(null);
-                setMessage('');
+          <div style={{ 
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '10px',
+            maxWidth: '500px',
+            width: '100%',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0 }}>Send Message to {selectedUser.name}</h3>
+              <button 
+                onClick={() => {
+                  setSelectedUser(null);
+                  setMessage('');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <textarea 
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows="6"
+              placeholder="Type your message here..."
+              style={{ 
+                width: '100%', 
+                marginBottom: '20px', 
+                padding: '15px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+                resize: 'vertical'
               }}
-            >
-              Cancel
-            </button>
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                style={{...buttonStyle, backgroundColor: '#27ae60', flex: 1, padding: '12px'}}
+                onClick={() => handleMessageSend(selectedUser._id)}
+              >
+                Send Message
+              </button>
+              <button 
+                style={{...buttonStyle, backgroundColor: '#95a5a6', flex: 1, padding: '12px'}}
+                onClick={() => {
+                  setSelectedUser(null);
+                  setMessage('');
+                }}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -395,25 +565,31 @@ const AdminUserInfo = () => {
 const tableHeaderStyle = {
   border: '1px solid #ddd',
   padding: '12px',
-  backgroundColor: '#34495e',
+  backgroundColor: '#2c3e50',
   color: 'white',
-  textAlign: 'left'
+  textAlign: 'left',
+  fontSize: '0.9rem',
+  fontWeight: '600',
+  whiteSpace: 'nowrap'
 };
 
 const tableCellStyle = {
   border: '1px solid #ddd',
   padding: '12px',
-  textAlign: 'left'
+  textAlign: 'left',
+  fontSize: '0.9rem',
+  verticalAlign: 'top'
 };
 
 const buttonStyle = {
   color: 'white',
   border: 'none',
   padding: '8px 12px',
-  margin: '0 5px',
   borderRadius: '4px',
   cursor: 'pointer',
-  fontSize: '0.9rem'
+  fontSize: '0.85rem',
+  fontWeight: '500',
+  transition: 'background-color 0.2s'
 };
 
 export default AdminUserInfo;

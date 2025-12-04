@@ -23,69 +23,32 @@ const UnlockAccess = () => {
         return;
       }
 
-      // Try the verify-pin endpoint first
-      try {
-        const response = await axios.post('http://localhost:5000/api/user/verify-pin', { pin }, {
+      // Call the verify-pin endpoint
+      const response = await axios.post('http://localhost:5000/api/user/verify-pin', 
+        { pin: pin.trim() }, 
+        {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
-        });
-        
-        if (response.data.verified) {
-          navigate('/vip-membership');
-          return;
-        } else {
-          setPinError(response.data.message || 'Invalid PIN. Please message the admin for the correct PIN to access the winning numbers.');
         }
-      } catch (apiError) {
-        console.error('API Error:', apiError);
-        
-        // If the API endpoint doesn't exist or fails, check PIN directly
-        // First, get the current PIN from admin endpoint
-        try {
-          const pinResponse = await axios.get('http://localhost:5000/api/admin/access-pin', {
-            headers: { 
-              Authorization: `Bearer ${token}`
-            }
-          });
-          
-          const currentPin = pinResponse.data.pin;
-          
-          if (pin === currentPin) {
-            // Update user verification status
-            await axios.put('http://localhost:5000/api/user/verify', { 
-              verified: true 
-            }, {
-              headers: { 
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            
-            navigate('/vip-membership');
-          } else {
-            setPinError('Invalid PIN. Please message the admin for the correct PIN to access the winning numbers.');
-          }
-        } catch (pinError) {
-          console.error('PIN fetch error:', pinError);
-          // Fallback to hardcoded PIN check (for testing)
-          if (pin === '68120') {
-            navigate('/vip-membership');
-          } else {
-            setPinError('Invalid PIN. Please message the admin for the correct PIN to access the winning numbers.');
-          }
-        }
+      );
+      
+      if (response.data.verified) {
+        // Store verification in localStorage
+        localStorage.setItem('isVerified', 'true');
+        localStorage.setItem('pinType', response.data.pinType || 'global');
+        navigate('/vip-membership');
+      } else {
+        setPinError(response.data.message || 'Invalid PIN. Please contact admin.');
       }
     } catch (error) {
       console.error('Error verifying PIN:', error);
       
-      // Try one more fallback - check against common PINs
-      const commonPins = ['68120', '12345', '00000', '11111', '22222', '33333'];
-      if (commonPins.includes(pin)) {
-        // For testing purposes, allow common PINs
-        localStorage.setItem('isVerified', 'true');
-        navigate('/vip-membership');
+      if (error.response) {
+        setPinError(error.response.data.message || 'Invalid PIN. Please try again.');
+      } else if (error.request) {
+        setPinError('Network error. Please check your connection and try again.');
       } else {
         setPinError('Error verifying PIN. Please contact admin at +1 405 926 0437 on WhatsApp.');
       }
@@ -113,7 +76,6 @@ const UnlockAccess = () => {
       });
       alert('Proof of payment uploaded successfully. You will receive your PIN after verification.');
       setProofOfPayment(null);
-      // Reset file input
       const fileInput = document.querySelector('.file-upload');
       if (fileInput) fileInput.value = '';
     } catch (error) {
