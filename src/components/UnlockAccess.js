@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './UnlockAccess.css';
@@ -8,10 +8,38 @@ const UnlockAccess = () => {
   const [proofOfPayment, setProofOfPayment] = useState(null);
   const [pinError, setPinError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [apiUrl, setApiUrl] = useState('');
   const navigate = useNavigate();
 
-  // Get API URL from environment variables (same as UserDashboard)
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // Get API URL from environment variables
+  useEffect(() => {
+    // IMPORTANT: Check if the URL ends with /api and remove it
+    let API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    
+    // Remove trailing slash if exists
+    API_URL = API_URL.replace(/\/$/, '');
+    
+    // Remove /api from the end if it exists (to avoid double /api)
+    if (API_URL.endsWith('/api')) {
+      API_URL = API_URL.slice(0, -4); // Remove '/api' from the end
+    }
+    
+    console.log('Final API URL:', API_URL);
+    setApiUrl(API_URL);
+    
+    // Test connection
+    testConnection(API_URL);
+  }, []);
+
+  const testConnection = async (url) => {
+    try {
+      console.log('Testing connection to:', `${url}/health`);
+      const response = await axios.get(`${url}/health`, { timeout: 5000 });
+      console.log('Health check successful:', response.data);
+    } catch (error) {
+      console.warn('Health check failed:', error.message);
+    }
+  };
 
   const handlePinSubmit = async (e) => {
     e.preventDefault();
@@ -23,37 +51,61 @@ const UnlockAccess = () => {
       if (!token) {
         setPinError('You are not logged in. Please log in first.');
         setIsVerifying(false);
+        navigate('/login');
         return;
       }
 
-      // Use environment variable for API URL
-      const response = await axios.post(`${API_URL}/api/user/verify-pin`, 
-        { pin: pin.trim() }, 
+      console.log('Making request to:', `${apiUrl}/api/user/verify-pin`);
+      
+      const response = await axios.post(
+        `${apiUrl}/api/user/verify-pin`,
+        { pin: pin.trim() },
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 10000
         }
       );
       
+      console.log('PIN verification response:', response.data);
+      
       if (response.data.verified) {
-        // Store verification in localStorage
         localStorage.setItem('isVerified', 'true');
         localStorage.setItem('pinType', response.data.pinType || 'global');
+        localStorage.setItem('pinVerifiedAt', new Date().toISOString());
+        
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        user.isVerified = true;
+        localStorage.setItem('user', JSON.stringify(user));
+        
         navigate('/vip-membership');
       } else {
         setPinError(response.data.message || 'Invalid PIN. Please contact admin.');
       }
     } catch (error) {
-      console.error('Error verifying PIN:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        url: error.config?.url
+      });
       
       if (error.response) {
-        setPinError(error.response.data.message || 'Invalid PIN. Please try again.');
+        switch (error.response.status) {
+          case 404:
+            setPinError(`Endpoint not found. Please check:\n- Backend URL: ${apiUrl}\n- Endpoint: /api/user/verify-pin`);
+            break;
+          case 401:
+            setPinError('Session expired. Please log in again.');
+            break;
+          default:
+            setPinError(error.response.data.message || 'Error verifying PIN.');
+        }
       } else if (error.request) {
-        setPinError('Network error. Please check your connection and try again.');
+        setPinError(`Cannot connect to server at ${apiUrl}. Please check if backend is running.`);
       } else {
-        setPinError('Error verifying PIN. Please contact admin at +1 405 926 0437 on WhatsApp.');
+        setPinError('Error verifying PIN. Please contact admin.');
       }
     } finally {
       setIsVerifying(false);
@@ -71,19 +123,28 @@ const UnlockAccess = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/user/upload-proof`, formData, {
-        headers: { 
+      if (!token) {
+        alert('You are not logged in. Please log in first.');
+        navigate('/login');
+        return;
+      }
+
+      console.log('Uploading to:', `${apiUrl}/api/user/upload-proof`);
+      
+      await axios.post(`${apiUrl}/api/user/upload-proof`, formData, {
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
         }
       });
-      alert('Proof of payment uploaded successfully. You will receive your PIN after verification.');
+
+      alert('Proof of payment uploaded successfully.');
       setProofOfPayment(null);
       const fileInput = document.querySelector('.file-upload');
       if (fileInput) fileInput.value = '';
     } catch (error) {
-      console.error('Error uploading proof:', error);
-      alert('Failed to upload proof. Please try again or send directly via WhatsApp.');
+      console.error('Upload error:', error);
+      alert('Failed to upload proof. Please try again.');
     }
   };
 
@@ -119,7 +180,7 @@ const UnlockAccess = () => {
               type="password"
               value={pin}
               onChange={(e) => {
-                setPin(e.target.value);
+                setPin(e.target.value.replace(/\D/g, '').slice(0, 5));
                 setPinError('');
               }}
               placeholder="Enter 5-digit PIN"
@@ -139,7 +200,7 @@ const UnlockAccess = () => {
           </form>
           {pinError && (
             <div className="pin-error show">
-              {pinError}
+              <div style={{ whiteSpace: 'pre-line' }}>{pinError}</div>
             </div>
           )}
           <div className="contact-admin">
@@ -173,7 +234,11 @@ const UnlockAccess = () => {
             className="file-upload"
             accept=".jpg,.jpeg,.png,.pdf"
           />
-          <button className="unlock-button" onClick={handleProofUpload}>
+          <button 
+            className="unlock-button" 
+            onClick={handleProofUpload}
+            disabled={!proofOfPayment}
+          >
             Send Proof of Payment
           </button>
           <div className="important-note" style={{ marginTop: '10px' }}>
