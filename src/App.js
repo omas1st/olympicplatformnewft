@@ -11,6 +11,7 @@ import AdminPanel from './components/admin/AdminPanel';
 import UserDashboard from './components/UserDashboard';
 import UnlockAccess from './components/UnlockAccess';
 import VIPMembership from './components/VIPMembership';
+import UploadDepositProof from './components/UploadDepositProof';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
@@ -31,6 +32,7 @@ function App() {
             <Route path="/dashboard" element={<UserDashboard />} />
             <Route path="/unlock-access" element={<UnlockAccess />} />
             <Route path="/vip-membership" element={<VIPMembership />} />
+            <Route path="/upload-deposit-proof" element={<UploadDepositProof />} />
             {/* Add a catch-all route for undefined paths */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

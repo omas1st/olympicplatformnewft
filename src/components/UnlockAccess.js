@@ -5,7 +5,6 @@ import './UnlockAccess.css';
 
 const UnlockAccess = () => {
   const [pin, setPin] = useState('');
-  const [proofOfPayment, setProofOfPayment] = useState(null);
   const [pinError, setPinError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [apiUrl, setApiUrl] = useState('');
@@ -112,42 +111,6 @@ const UnlockAccess = () => {
     }
   };
 
-  const handleProofUpload = async () => {
-    if (!proofOfPayment) {
-      alert('Please select a proof of payment file');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('proof', proofOfPayment);
-
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert('You are not logged in. Please log in first.');
-        navigate('/login');
-        return;
-      }
-
-      console.log('Uploading to:', `${apiUrl}/api/user/upload-proof`);
-      
-      await axios.post(`${apiUrl}/api/user/upload-proof`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      alert('Proof of payment uploaded successfully.');
-      setProofOfPayment(null);
-      const fileInput = document.querySelector('.file-upload');
-      if (fileInput) fileInput.value = '';
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Failed to upload proof. Please try again.');
-    }
-  };
-
   return (
     <div className="container">
       <div className="unlock-container">
@@ -157,19 +120,18 @@ const UnlockAccess = () => {
           <h2>Instructions</h2>
           <p>To unlock access to the winning numbers:</p>
           <ol className="instructions-list">
-            <li>Make a payment of R300 to the account details below.</li>
+            <li>Kindly fund your wallet with R300, then you'll get the 5 digit Pin.</li>
             <li>
-              After payment, send a message on WhatsApp to the Admin/Agent at:
+              After funding your wallet, send a message on WhatsApp to the Admin/Agent at:
               <br />
               <strong>+1 405 926 0437</strong>
               <br />
               <strong>+44 739 887 1333</strong>
             </li>
-            <li>Upload your payment receipt below to receive your 5-digit registration PIN.</li>
+            
           </ol>
           <div className="important-note">
-            <strong>Note:</strong> TRANSFER is not allowed for those using CAPITEC BANK APP ONLY, 
-            kindly use ATM DEPOSIT or any other banking app which is not CAPITEC instead.
+            <strong>Note:</strong> Input your 5 digit pin below, if you don't have a pin yet, kindly check your dashboard notification for your pin, or you message the admin.
           </div>
         </div>
 
@@ -210,41 +172,9 @@ const UnlockAccess = () => {
           </div>
         </div>
 
-        <div className="unlock-card">
-          <h3>Banking Details</h3>
-          <div className="banking-details">
-            <p><strong>Beneficiary Name:</strong> MAMA PTY</p>
-            <p><strong>Account Number:</strong> 62509963139</p>
-            <p><strong>Recipient/Beneficiary Reference:</strong> 0651623286</p>
-            <p><strong>Bank:</strong> FNB</p>
-            <p><strong>Branch Code:</strong> 250655</p>
-            <p><strong>Payment Type:</strong> Immediate Payment</p>
-          </div>
-          <div className="important-note">
-            <strong>Important:</strong> Always include "0651623286" as the reference number when making your payment. 
-            Your payment won't be processed if you fail to add "0651623286" as the reference.
-          </div>
-        </div>
+        {/* Removed Banking Details Section */}
 
-        <div className="unlock-card">
-          <h3>Upload Proof of Payment</h3>
-          <input
-            type="file"
-            onChange={(e) => setProofOfPayment(e.target.files[0])}
-            className="file-upload"
-            accept=".jpg,.jpeg,.png,.pdf"
-          />
-          <button 
-            className="unlock-button" 
-            onClick={handleProofUpload}
-            disabled={!proofOfPayment}
-          >
-            Send Proof of Payment
-          </button>
-          <div className="important-note" style={{ marginTop: '10px' }}>
-            After uploading, please wait for verification. You will receive your PIN via WhatsApp.
-          </div>
-        </div>
+        {/* Removed Upload Proof Section */}
       </div>
     </div>
   );

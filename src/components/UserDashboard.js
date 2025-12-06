@@ -10,6 +10,10 @@ const UserDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [apiStatus, setApiStatus] = useState('checking');
+  const [showDepositForm, setShowDepositForm] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [depositLoading, setDepositLoading] = useState(false);
   const navigate = useNavigate();
   const { user, updateUser, logout } = useAuth();
 
@@ -26,7 +30,7 @@ const UserDashboard = () => {
   // Test API connection
   const testApiConnection = useCallback(async () => {
     try {
-      console.log('Testing API connection to:', API_URL);
+      console.log('Testing API connection to:', `${API_URL}/health`);
       const healthResponse = await axios.get(`${API_URL}/health`, { timeout: 5000 });
       console.log('API health check response:', healthResponse.data);
       return true;
@@ -156,6 +160,121 @@ const UserDashboard = () => {
       throw error;
     }
   }, [API_URL, updateUser, logout]);
+
+  // Helper function to get the correct API endpoint
+  const getApiEndpoint = (endpoint) => {
+    // Remove any trailing slash from API_URL
+    let baseUrl = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL;
+    
+    // Check if baseUrl already contains /api
+    if (baseUrl.endsWith('/api')) {
+      // If it ends with /api, remove it to avoid double /api
+      baseUrl = baseUrl.slice(0, -4);
+    }
+    
+    // Construct the full URL
+    return `${baseUrl}${endpoint}`;
+  };
+
+  // Handle deposit submission
+  const handleDepositSubmit = async () => {
+    if (!depositAmount || isNaN(depositAmount) || parseFloat(depositAmount) <= 0) {
+      alert('Please enter a valid deposit amount');
+      return;
+    }
+
+    if (!paymentMethod) {
+      alert('Please select a payment method');
+      return;
+    }
+
+    setDepositLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('You are not logged in. Please login first.');
+        navigate('/login');
+        return;
+      }
+
+      // Use the helper function to get the correct endpoint
+      const depositEndpoint = getApiEndpoint('/api/user/submit-deposit');
+      
+      console.log('Submitting deposit to:', depositEndpoint);
+      console.log('Deposit data:', {
+        amount: parseFloat(depositAmount),
+        paymentMethod: paymentMethod,
+        currency: 'ZAR'
+      });
+      console.log('Auth token present:', !!token);
+
+      const response = await axios.post(
+        depositEndpoint,
+        {
+          amount: parseFloat(depositAmount),
+          paymentMethod: paymentMethod,
+          currency: 'ZAR'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 10000
+        }
+      );
+
+      console.log('Deposit response:', response.data);
+
+      if (response.data.success) {
+        alert('Deposit request submitted successfully! You can now upload your payment proof.');
+        setDepositAmount('');
+        setPaymentMethod('');
+        setShowDepositForm(false);
+        
+        // Redirect to upload proof page
+        navigate('/upload-deposit-proof');
+        
+        // Refresh user data to show pending deposit
+        fetchUserData();
+      } else {
+        alert('Deposit submission failed: ' + (response.data.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Deposit submission error:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method
+      });
+      
+      let errorMessage = 'Failed to submit deposit request. ';
+      
+      if (error.response) {
+        if (error.response.status === 404) {
+          errorMessage += `Route not found (${error.config?.url}). Please check if the backend server has the deposit routes configured in user.js file.`;
+        } else if (error.response.status === 401) {
+          errorMessage += 'Your session has expired. Please login again.';
+          logout();
+        } else if (error.response.status === 500) {
+          errorMessage += 'Server error. Please check the backend logs.';
+        } else {
+          errorMessage += error.response.data?.message || `Server error (${error.response.status})`;
+        }
+      } else if (error.request) {
+        errorMessage += 'No response from server. Please check if the backend is running.';
+      } else {
+        errorMessage += error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setDepositLoading(false);
+    }
+  };
 
   // Main data fetching effect
   useEffect(() => {
@@ -350,6 +469,21 @@ const UserDashboard = () => {
         createdAt: new Date()
       }];
 
+  // Banking details
+  const bankingDetails = {
+    beneficiaryName: 'MAMA PTY',
+    accountNumber: '62509963139',
+    reference: '0651623286',
+    bank: 'FNB',
+    branchCode: '250655',
+    paymentType: 'Immediate Payment'
+  };
+
+  const cryptoDetails = {
+    cryptocurrency: 'Bitcoin',
+    walletAddress: '3Liim5xHAkLEgUjzfw2DNFqbEkzaXgWWu8'
+  };
+
   return (
     <div className="container">
       {/* Debug info - remove in production */}
@@ -403,6 +537,123 @@ const UserDashboard = () => {
       )}
 
       <div className="dashboard-grid">
+        {/* Balance Section */}
+        <div className="card balance-card">
+          <h3>Your Balance</h3>
+          <div className="balance-display">
+            <div className="balance-amount">
+              R {user.balance ? parseFloat(user.balance).toFixed(2) : '0.00'}
+            </div>
+            <div className="balance-currency">
+              South African Rand (ZAR)
+            </div>
+          </div>
+          <div className="balance-actions">
+            <button 
+              className="deposit-button"
+              onClick={() => setShowDepositForm(true)}
+            >
+              Deposit Now
+            </button>
+          </div>
+        </div>
+
+        {/* Deposit Form Modal */}
+        {showDepositForm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h3>Make a Deposit</h3>
+                <button 
+                  className="close-modal"
+                  onClick={() => setShowDepositForm(false)}
+                  disabled={depositLoading}
+                >
+                  &times;
+                </button>
+              </div>
+              
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Deposit Amount (ZAR)</label>
+                  <input
+                    type="number"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value)}
+                    placeholder="Enter amount"
+                    min="1"
+                    step="0.01"
+                    disabled={depositLoading}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Payment Method</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    disabled={depositLoading}
+                  >
+                    <option value="">Select Payment Method</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="cryptocurrency">Cryptocurrency</option>
+                  </select>
+                </div>
+
+                {paymentMethod === 'bank_transfer' && (
+                  <div className="payment-details">
+                    <h4>Banking Details</h4>
+                    <div className="banking-info">
+                      <p><strong>Beneficiary Name:</strong> {bankingDetails.beneficiaryName}</p>
+                      <p><strong>Account Number:</strong> {bankingDetails.accountNumber}</p>
+                      <p><strong>Recipient/Beneficiary Reference:</strong> {bankingDetails.reference}</p>
+                      <p><strong>Bank:</strong> {bankingDetails.bank}</p>
+                      <p><strong>Branch Code:</strong> {bankingDetails.branchCode}</p>
+                      <p><strong>Payment Type:</strong> {bankingDetails.paymentType}</p>
+                    </div>
+                    <div className="important-note">
+                      <strong>Important:</strong> Always include "{bankingDetails.reference}" as the reference number when making your payment. Your payment won't be processed if you fail to add "{bankingDetails.reference}" as the reference.
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'cryptocurrency' && (
+                  <div className="payment-details">
+                    <h4>Crypto Details</h4>
+                    <div className="crypto-info">
+                      <p><strong>Cryptocurrency:</strong> {cryptoDetails.cryptocurrency}</p>
+                      <p><strong>Wallet Address:</strong> <code>{cryptoDetails.walletAddress}</code></p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="modal-actions">
+                  <button 
+                    className="submit-deposit"
+                    onClick={handleDepositSubmit}
+                    disabled={!depositAmount || !paymentMethod || depositLoading}
+                  >
+                    {depositLoading ? 'Submitting...' : 'Submit Deposit Request'}
+                  </button>
+                  <button 
+                    className="cancel-deposit"
+                    onClick={() => setShowDepositForm(false)}
+                    disabled={depositLoading}
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+                {depositLoading && (
+                  <div className="loading-indicator">
+                    <small>Submitting deposit request... Please wait.</small>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Unlock Access Button */}
         <div className="card unlock-access-card">
           <h3>Unlock Access</h3>

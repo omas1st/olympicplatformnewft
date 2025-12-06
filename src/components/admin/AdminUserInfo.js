@@ -87,7 +87,7 @@ const AdminUserInfo = () => {
       try {
         const response = await api.post(`/admin/set-user-pin/${userId}`, { pin: userPin });
         if (response.data.success) {
-          alert('User PIN set successfully');
+          alert('User PIN set successfully. User has been notified.');
           // Refresh users to show updated info
           fetchUsers();
         } else {
@@ -235,6 +235,10 @@ const AdminUserInfo = () => {
             {pinMessage}
           </div>
         )}
+        <div style={{ marginTop: '10px', fontSize: '0.9rem', color: '#666' }}>
+          <strong>Note:</strong> When updating the global PIN, users will receive a general notification. 
+          For personal PINs, only the specific user will be notified.
+        </div>
       </div>
 
       {showPinModal && (
@@ -365,6 +369,7 @@ const AdminUserInfo = () => {
                   <th style={tableHeaderStyle}>WhatsApp</th>
                   <th style={tableHeaderStyle}>Country</th>
                   <th style={tableHeaderStyle}>Status</th>
+                  <th style={tableHeaderStyle}>Balance (ZAR)</th>
                   <th style={tableHeaderStyle}>Current Plan</th>
                   <th style={tableHeaderStyle}>Actions</th>
                 </tr>
@@ -404,6 +409,9 @@ const AdminUserInfo = () => {
                         {user.isVerified ? 'Verified' : 'Not Verified'}
                       </span>
                     </td>
+                    <td style={{...tableCellStyle, fontWeight: 'bold', color: '#27ae60'}}>
+                      R {user.balance || 0}
+                    </td>
                     <td style={tableCellStyle}>
                       {user.plans && user.plans.length > 0 ? (
                         <div style={{ 
@@ -431,7 +439,7 @@ const AdminUserInfo = () => {
                           <button 
                             style={{...buttonStyle, backgroundColor: '#e67e22', flex: 1}}
                             onClick={() => handleSetUserPin(user._id, user.name)}
-                            title="Set personal PIN"
+                            title="Set personal PIN (User will be notified)"
                           >
                             Set PIN
                           </button>
