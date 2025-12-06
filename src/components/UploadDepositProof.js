@@ -141,7 +141,7 @@ const UploadDepositProof = () => {
           errorMessage += error.response.data?.message || `Server error (${error.response.status})`;
         }
       } else if (error.request) {
-        errorMessage += 'No response from server. Please check if the backend is running at: ' + API_URL;
+        errorMessage += 'No response from server. ';
       } else {
         errorMessage += error.message;
       }
