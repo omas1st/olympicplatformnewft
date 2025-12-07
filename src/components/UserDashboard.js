@@ -610,9 +610,13 @@ const UserDashboard = () => {
                       <p><strong>Bank:</strong> {bankingDetails.bank}</p>
                       <p><strong>Branch Code:</strong> {bankingDetails.branchCode}</p>
                       <p><strong>Payment Type:</strong> {bankingDetails.paymentType}</p>
-                    </div>
+                   </div>
                     <div className="important-note">
                       <strong>Important:</strong> Always include "{bankingDetails.reference}" as the reference number when making your payment. Your payment won't be processed if you fail to add "{bankingDetails.reference}" as the reference.
+                    </div>
+                   {/* Add this new note section */}
+                    <div className="banking-note">
+                      <strong>Note:</strong> Transfer using Capitec Bank only is not allowed. Capitec users are not allowed to make transfers. Please use Tyme Bank, Nedbank, or any other bank transfer is allowed. Alternatively, you can use ATM deposit for the payment.
                     </div>
                   </div>
                 )}
