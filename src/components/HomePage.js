@@ -220,9 +220,7 @@ const HomePage = () => {
             <strong>WhatsApp Message R.K Colin:</strong> 
             <span className="whatsapp-link" onClick={openWhatsAppRK}> +44 7398871333</span>
           </p>
-          <p className="email-contact">
-            <strong>GMAIL CONTACT:</strong> olympic
-          </p>
+          
         </section>
 
         {/* Carousel Section */}
