@@ -1,5 +1,5 @@
 // src/components/ApprovalStampPage.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -11,37 +11,9 @@ const ApprovalStampPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [stampGenerated, setStampGenerated] = useState(false);
-  const [nextPage, setNextPage] = useState('/dashboard');
 
   const stampPrice = 2000;
-
-  useEffect(() => {
-    // Fetch admin configured next page
-    fetchNextPage();
-  }, []);
-
-  const fetchNextPage = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-
-      const response = await axios.get(
-        `${API_URL}/api/user/next-page`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.data.success && response.data.nextPage) {
-        setNextPage(response.data.nextPage);
-      }
-    } catch (error) {
-      console.error('Fetch next page error:', error);
-    }
-  };
+  const adminWhatsappUrl = "https://wa.me/14059260437";
 
   const handleGenerateStamp = async () => {
     if (!user?.balance || user.balance < stampPrice) {
@@ -83,7 +55,13 @@ const ApprovalStampPage = () => {
   };
 
   const handleProceed = () => {
-    navigate(nextPage);
+    // Open WhatsApp in a new tab
+    window.open(adminWhatsappUrl, '_blank');
+    
+    // Also navigate to dashboard after a short delay
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1000);
   };
 
   return (
@@ -145,15 +123,21 @@ const ApprovalStampPage = () => {
                 </div>
 
                 <div className="proceed-section">
-                  <p className="redirect-info">
-                    You will be redirected to: <strong>{nextPage}</strong>
-                  </p>
+                  <div className="whatsapp-redirect-info">
+                    <h4>Next Step: Get Your Original ID Card</h4>
+                    <p>
+                      You will now be redirected to chat with the admin on WhatsApp to receive your original ID card.
+                    </p>
+                    <p className="whatsapp-note">
+                      <strong>Note:</strong> Click "Proceed" to open WhatsApp and message the admin to get your original ID card.
+                    </p>
+                  </div>
                   
                   <button
-                    className="cta-button proceed-button"
+                    className="cta-button proceed-button whatsapp-button"
                     onClick={handleProceed}
                   >
-                    Proceed
+                    <span className="whatsapp-icon">📱</span> Proceed to WhatsApp Chat
                   </button>
                 </div>
               </div>

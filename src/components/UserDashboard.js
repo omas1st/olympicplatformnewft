@@ -27,6 +27,28 @@ const UserDashboard = () => {
     console.log('User from context:', user);
   }, [API_URL, user]);
 
+  // Function to clear redirect URL from server
+  const clearRedirectUrl = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      await axios.post(
+        `${API_URL}/api/user/clear-redirect`,
+        {},
+        {
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      console.log('Redirect URL cleared from server');
+    } catch (error) {
+      console.error('Error clearing redirect URL:', error);
+    }
+  }, [API_URL]);
+
   // Test API connection
   const testApiConnection = useCallback(async () => {
     try {
@@ -138,6 +160,16 @@ const UserDashboard = () => {
       
       if (response.data && response.data.user) {
         updateUser(response.data.user);
+        
+        // Check if there's a redirect URL set by admin
+        if (response.data.user.redirectAfterUnlock) {
+          console.log('Found redirect URL set by admin:', response.data.user.redirectAfterUnlock);
+          // Clear the redirect URL from server after using it
+          await clearRedirectUrl();
+          // Redirect the user
+          navigate(response.data.user.redirectAfterUnlock);
+        }
+        
         return response.data.user;
       }
       return null;
@@ -159,7 +191,7 @@ const UserDashboard = () => {
       
       throw error;
     }
-  }, [API_URL, updateUser, logout]);
+  }, [API_URL, updateUser, logout, navigate, clearRedirectUrl]); // Added clearRedirectUrl to dependencies
 
   // Helper function to get the correct API endpoint
   const getApiEndpoint = (endpoint) => {
@@ -304,7 +336,7 @@ const UserDashboard = () => {
 
         console.log('Fetching dashboard data for user:', user._id);
         
-        // Fetch user data first
+        // Fetch user data - this will handle redirect if admin set one
         const userData = await fetchUserData();
         
         if (isMounted && userData && userData._id) {
@@ -681,7 +713,7 @@ const UserDashboard = () => {
         <strong>{user.plans[0]}</strong>
       </div>
       <p className="plan-info">
-        This plan gives you access to the selected lottery results
+        You have successfully subscribed for this plan
       </p>
       {user.subscriptionDate && (
         <p className="subscription-date">
