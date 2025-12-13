@@ -1,0 +1,321 @@
+/* src/components/CardNumberPage.css */
+.cardnumber-container {
+  padding: 40px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.cardnumber-content {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.info-image {
+  flex-shrink: 0;
+}
+
+.placeholder-image {
+  width: 200px;
+  height: 150px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+  padding: 20px;
+}
+
+.info-text {
+  flex: 1;
+}
+
+.info-text p {
+  font-size: 18px;
+  line-height: 1.6;
+  color: #34495e;
+  margin: 0;
+}
+
+.tracking-info {
+  text-align: center;
+}
+
+.price-display {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 30px;
+  display: inline-block;
+  min-width: 300px;
+}
+
+.price-display p {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.generate-button {
+  padding: 15px 40px;
+  font-size: 18px;
+  min-width: 300px;
+}
+
+.tracking-result {
+  margin-top: 30px;
+}
+
+.tracking-number-display {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 30px;
+  border-radius: 10px;
+  color: white;
+  margin-bottom: 30px;
+}
+
+.tracking-number-display h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: white;
+  font-size: 24px;
+}
+
+.tracking-number {
+  font-size: 32px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 20px;
+  border-radius: 5px;
+  margin: 20px 0;
+  font-family: monospace;
+}
+
+.note {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-top: 10px;
+}
+
+.proceed-button {
+  padding: 15px 40px;
+  font-size: 18px;
+  min-width: 300px;
+  background: #27ae60;
+}
+
+.proceed-button:hover {
+  background: #229954;
+}
+
+.error-message {
+  background: #fde8e8;
+  color: #e74c3c;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px auto;
+  border-left: 4px solid #e74c3c;
+  max-width: 500px;
+}
+
+.success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px auto;
+  border-left: 4px solid #28a745;
+  max-width: 500px;
+}
+
+@media (max-width: 768px) {
+  .cardnumber-container {
+    padding: 20px 10px;
+  }
+  
+  .cardnumber-content {
+    padding: 20px;
+  }
+  
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .placeholder-image {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .generate-button,
+  .proceed-button {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .price-display {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Additional CSS styles for CardNumberPage.css */
+
+.benefits-list {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.benefits-list li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.info-text h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+}
+
+.note {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+  margin-top: 20px;
+  font-size: 0.95rem;
+}
+
+.payment-summary {
+  margin-top: 20px;
+}
+
+.summary-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.summary-card h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-row.total {
+  font-weight: bold;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  font-size: 1.1rem;
+  padding-top: 12px;
+}
+
+.success-card {
+  background: #f0f9f0;
+  border-radius: 8px;
+  padding: 25px;
+  text-align: center;
+  border: 1px solid #d4edda;
+  margin-bottom: 20px;
+}
+
+.success-icon {
+  background: #28a745;
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin: 0 auto 15px;
+  font-weight: bold;
+}
+
+.tracking-label {
+  color: #666;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+}
+
+.success-note {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 15px;
+  font-size: 0.95rem;
+}
+
+.next-steps {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.next-steps h4 {
+  margin-top: 0;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+/* Update existing button styles for better appearance */
+.generate-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.generate-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+}
+
+.proceed-button {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  border: none;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.proceed-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+}

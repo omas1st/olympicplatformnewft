@@ -674,24 +674,35 @@ const UserDashboard = () => {
 
         {/* Plans */}
         <div className="card plan-card">
-          <h3>Your Plan</h3>
-          {hasPlan ? (
-            <div className="plan-display">
-              <div className="current-plan">
-                <strong>{user.plans[0]}</strong>
-              </div>
-              <p className="plan-info">
-                This plan gives you access to the selected lottery results
-              </p>
-            </div>
-          ) : (
-            <div className="no-plan">
-              <p className="no-plan-message">
-                You don't have any plan yet. Click the <strong>Unlock Access to Winning Numbers</strong> button to subscribe for a plan.
-              </p>
-            </div>
-          )}
-        </div>
+  <h3>Your Plan</h3>
+  {hasPlan ? (
+    <div className="plan-display">
+      <div className="current-plan">
+        <strong>{user.plans[0]}</strong>
+      </div>
+      <p className="plan-info">
+        This plan gives you access to the selected lottery results
+      </p>
+      {user.subscriptionDate && (
+        <p className="subscription-date">
+          Subscribed on: {new Date(user.subscriptionDate).toLocaleDateString()}
+        </p>
+      )}
+    </div>
+  ) : (
+    <div className="no-plan">
+      <p className="no-plan-message">
+        You don't have any plan yet. Click the <strong>Unlock Access to Winning Numbers</strong> button to subscribe for a plan.
+      </p>
+      <button 
+        className="view-plans-button"
+        onClick={() => navigate('/subpage')}
+      >
+        View Subscription Plans
+      </button>
+    </div>
+  )}
+</div>
 
         {/* Contact Admin via WhatsApp */}
         <div className="card">

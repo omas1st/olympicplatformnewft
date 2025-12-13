@@ -1,9 +1,11 @@
+// src/components/admin/AdminPanel.js
 import React, { useState } from 'react';
 import AdminUserInfo from './AdminUserInfo';
 import AdminEditLotto from './AdminEditLotto';
 import AdminEditResult from './AdminEditResult';
 import AdminCarousel from './AdminCarousel';
 import AdminUpdateBalance from './AdminUpdateBalance';
+import AdminNewPaymentPage from './AdminNewPaymentPage';
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState('userinfo');
@@ -20,6 +22,8 @@ const AdminPanel = () => {
         return <AdminCarousel />;
       case 'updatebalance':
         return <AdminUpdateBalance />;
+      case 'newpayment':
+        return <AdminNewPaymentPage />;
       default:
         return <AdminUserInfo />;
     }
@@ -59,6 +63,12 @@ const AdminPanel = () => {
             onClick={() => setActiveTab('updatebalance')}
           >
             Update Balance
+          </button>
+          <button 
+            className={activeTab === 'newpayment' ? 'active' : ''} 
+            onClick={() => setActiveTab('newpayment')}
+          >
+            New Payment Page
           </button>
         </div>
         {renderContent()}
