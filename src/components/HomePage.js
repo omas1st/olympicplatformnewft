@@ -105,6 +105,8 @@ const HomePage = () => {
   const headerBg = process.env.PUBLIC_URL + '/images/img2.png';
   const lottoBg = process.env.PUBLIC_URL + '/images/img1.png';
   const idCardImg = process.env.PUBLIC_URL + '/images/img3.png';
+  const facebookGroupImg = process.env.PUBLIC_URL + '/images/img5.png';
+  const whatsappGroupImg = process.env.PUBLIC_URL + '/images/img6.png';
 
   return (
     <div className="homepage">
@@ -309,6 +311,40 @@ const HomePage = () => {
               to your Whatsapp number you don't have to get the Platform Membership ID Card. 
               Kindly Whatsapp the agent now +1 405 926 0437 to get full information on how to 
               apply for the Platform Membership ID to get added to the Platform Group.
+            </p>
+          </div>
+        </section>
+
+        {/* Facebook Group Section */}
+        <section className="id-card-section">
+          <img 
+            src={facebookGroupImg} 
+            alt="Platform Facebook Group Profile Picture" 
+            className="id-card-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+          <div className="id-card-content">
+            <p className="id-card-description">
+              This is the platform facebook group profile picture. do well to join the platform facebook group to see and know about the platform updates.
+            </p>
+          </div>
+        </section>
+
+        {/* WhatsApp Group Section */}
+        <section className="id-card-section">
+          <img 
+            src={whatsappGroupImg} 
+            alt="Platform WhatsApp Booming Group Profile" 
+            className="id-card-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+          <div className="id-card-content">
+            <p className="id-card-description">
+              This is the platform whatsapp booming group profile. kindly chat up the agent now +14059260437 to get full information on how to get added to the platform group.
             </p>
           </div>
         </section>
