@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import html2canvas from 'html2canvas';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './CardPage.css';
 
 const CardPage = () => {
@@ -44,6 +45,9 @@ const CardPage = () => {
     }
     // Generate initial card number
     setCardNumber(generateCardNumber());
+    
+    // Update progress tracking when page loads
+    updateProgressTracking('card-page');
   }, [user]);
 
   const formatDate = (dateString) => {
@@ -174,6 +178,9 @@ const CardPage = () => {
         
         // Generate a new card number for display
         setCardNumber(generateCardNumber());
+        
+        // Update progress tracking
+        updateProgressTracking('card-page', true);
       } else {
         setError(response.data.message || 'Failed to generate ID card');
       }
@@ -215,6 +222,8 @@ const CardPage = () => {
   };
 
   const handleProceed = () => {
+    // Update progress tracking before navigating
+    updateProgressTracking('card-page', true);
     navigate('/card-number-page');
   };
 

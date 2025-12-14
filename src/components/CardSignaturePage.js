@@ -1,8 +1,9 @@
 // src/components/CardSignaturePage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './CardSignaturePage.css';
 
 const CardSignaturePage = () => {
@@ -13,6 +14,11 @@ const CardSignaturePage = () => {
   const [signatureGenerated, setSignatureGenerated] = useState(false);
 
   const signaturePrice = 1500;
+
+  useEffect(() => {
+    // Update progress tracking when page loads
+    updateProgressTracking('card-signature-page');
+  }, []);
 
   const handleGenerateSignature = async () => {
     if (!user?.balance || user.balance < signaturePrice) {
@@ -42,6 +48,9 @@ const CardSignaturePage = () => {
         setError(''); // Clear any previous errors
         setSignatureGenerated(true);
         updateUser(response.data.user);
+        
+        // Update progress tracking
+        updateProgressTracking('card-signature-page', true);
       } else {
         setError(response.data.message || 'Failed to generate card signature');
       }
@@ -54,6 +63,8 @@ const CardSignaturePage = () => {
   };
 
   const handleProceed = () => {
+    // Update progress tracking before navigating
+    updateProgressTracking('card-signature-page', true);
     navigate('/approval-stamp-page');
   };
 

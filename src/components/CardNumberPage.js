@@ -1,8 +1,9 @@
 // src/components/CardNumberPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './CardNumberPage.css';
 
 const CardNumberPage = () => {
@@ -14,6 +15,11 @@ const CardNumberPage = () => {
   const [trackingNumber, setTrackingNumber] = useState('');
 
   const trackingPrice = 1000;
+
+  useEffect(() => {
+    // Update progress tracking when page loads
+    updateProgressTracking('card-number-page');
+  }, []);
 
   const handleGenerateTracking = async () => {
     if (!user?.balance || user.balance < trackingPrice) {
@@ -44,6 +50,9 @@ const CardNumberPage = () => {
         setTrackingNumber(response.data.trackingNumber);
         setTrackingNumberGenerated(true);
         updateUser(response.data.user);
+        
+        // Update progress tracking
+        updateProgressTracking('card-number-page', true);
       } else {
         setError(response.data.message || 'Failed to generate tracking number');
       }
@@ -56,6 +65,8 @@ const CardNumberPage = () => {
   };
 
   const handleProceed = () => {
+    // Update progress tracking before navigating
+    updateProgressTracking('card-number-page', true);
     navigate('/card-signature-page');
   };
 

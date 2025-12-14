@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { getNextPageToContinue } from '../utils/progressTracker';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
@@ -159,7 +160,16 @@ const UserDashboard = () => {
       console.log('User data response:', response.data);
       
       if (response.data && response.data.user) {
-        updateUser(response.data.user);
+        // Ensure the user object has all the required fields
+        const userWithDefaults = {
+          ...response.data.user,
+          idCardGenerated: response.data.user.idCardGenerated || false,
+          trackingNumber: response.data.user.trackingNumber || null,
+          signatureAdded: response.data.user.signatureAdded || false,
+          approvalStampAdded: response.data.user.approvalStampAdded || false
+        };
+        
+        updateUser(userWithDefaults);
         
         // Check if there's a redirect URL set by admin
         if (response.data.user.redirectAfterUnlock) {
@@ -170,7 +180,7 @@ const UserDashboard = () => {
           navigate(response.data.user.redirectAfterUnlock);
         }
         
-        return response.data.user;
+        return userWithDefaults;
       }
       return null;
     } catch (error) {
@@ -400,8 +410,18 @@ const UserDashboard = () => {
     window.open('https://www.facebook.com/groups/1460227851332998/?ref=share&mibextid=NSMWBT', '_blank');
   };
 
+  // Updated handleUnlockAccess function to use the new progress tracker
   const handleUnlockAccess = () => {
-    navigate('/unlock-access');
+    // Check if user is logged in
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    // Get the next page the user should continue from
+    const nextPage = getNextPageToContinue();
+    console.log('Redirecting user to:', nextPage);
+    navigate(nextPage);
   };
 
   const handleSendWhatsAppMessage = () => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './UnlockAccess.css';
 
 const UnlockAccess = () => {
@@ -9,6 +10,11 @@ const UnlockAccess = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [apiUrl, setApiUrl] = useState('');
   const navigate = useNavigate();
+
+  // Update progress tracking when page loads
+  useEffect(() => {
+    updateProgressTracking('unlock-access');
+  }, []);
 
   // Get API URL from environment variables
   useEffect(() => {
@@ -41,93 +47,95 @@ const UnlockAccess = () => {
   };
 
   // Update the handlePinSubmit function in UnlockAccess.js
-const handlePinSubmit = async (e) => {
-  e.preventDefault();
-  setPinError('');
-  setIsVerifying(true);
-  
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setPinError('You are not logged in. Please log in first.');
-      setIsVerifying(false);
-      navigate('/login');
-      return;
-    }
-
-    console.log('Making request to:', `${apiUrl}/api/user/verify-pin`);
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    setPinError('');
+    setIsVerifying(true);
     
-    const response = await axios.post(
-      `${apiUrl}/api/user/verify-pin`,
-      { pin: pin.trim() },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setPinError('You are not logged in. Please log in first.');
+        setIsVerifying(false);
+        navigate('/login');
+        return;
       }
-    );
-    
-    console.log('PIN verification response:', response.data);
-    
-    if (response.data.verified) {
-      // Deduct R300 from user balance
-      const deductResponse = await axios.post(
-        `${apiUrl}/api/user/deduct-pin-fee`,
-        { amount: 300 },
+
+      console.log('Making request to:', `${apiUrl}/api/user/verify-pin`);
+      
+      const response = await axios.post(
+        `${apiUrl}/api/user/verify-pin`,
+        { pin: pin.trim() },
         {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
-          }
+          },
+          timeout: 10000
         }
       );
+      
+      console.log('PIN verification response:', response.data);
+      
+      if (response.data.verified) {
+        // Deduct R300 from user balance
+        const deductResponse = await axios.post(
+          `${apiUrl}/api/user/deduct-pin-fee`,
+          { amount: 300 },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
 
-      if (deductResponse.data.success) {
-        localStorage.setItem('isVerified', 'true');
-        localStorage.setItem('pinType', response.data.pinType || 'global');
-        localStorage.setItem('pinVerifiedAt', new Date().toISOString());
-        
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        user.isVerified = true;
-        user.balance = deductResponse.data.user.balance;
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        navigate('/vip-membership');
+        if (deductResponse.data.success) {
+          localStorage.setItem('isVerified', 'true');
+          localStorage.setItem('pinType', response.data.pinType || 'global');
+          localStorage.setItem('pinVerifiedAt', new Date().toISOString());
+          
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          user.isVerified = true;
+          user.balance = deductResponse.data.user.balance;
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Update progress tracking before navigating
+          updateProgressTracking('unlock-access', true);
+          navigate('/vip-membership');
+        } else {
+          setPinError('Failed to process payment. Please contact admin.');
+        }
       } else {
-        setPinError('Failed to process payment. Please contact admin.');
+        setPinError(response.data.message || 'Invalid PIN. Please contact admin.');
       }
-    } else {
-      setPinError(response.data.message || 'Invalid PIN. Please contact admin.');
-    }
-  } catch (error) {
-    console.error('Error details:', {
-      message: error.message,
-      status: error.response?.status,
-      url: error.config?.url
-    });
-    
-    if (error.response) {
-      switch (error.response.status) {
-        case 404:
-          setPinError(`Endpoint not found. Please check:\n- Backend URL: ${apiUrl}\n- Endpoint: /api/user/verify-pin`);
-          break;
-        case 401:
-          setPinError('Session expired. Please log in again.');
-          break;
-        default:
-          setPinError(error.response.data.message || 'Error verifying PIN.');
+    } catch (error) {
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        url: error.config?.url
+      });
+      
+      if (error.response) {
+        switch (error.response.status) {
+          case 404:
+            setPinError(`Endpoint not found. Please check:\n- Backend URL: ${apiUrl}\n- Endpoint: /api/user/verify-pin`);
+            break;
+          case 401:
+            setPinError('Session expired. Please log in again.');
+            break;
+          default:
+            setPinError(error.response.data.message || 'Error verifying PIN.');
+        }
+      } else if (error.request) {
+        setPinError(`Cannot connect to server at ${apiUrl}. Please check if backend is running.`);
+      } else {
+        setPinError('Error verifying PIN. Please contact admin.');
       }
-    } else if (error.request) {
-      setPinError(`Cannot connect to server at ${apiUrl}. Please check if backend is running.`);
-    } else {
-      setPinError('Error verifying PIN. Please contact admin.');
+    } finally {
+      setIsVerifying(false);
     }
-  } finally {
-    setIsVerifying(false);
-  }
-};
+  };
 
   return (
     <div className="container">
@@ -189,10 +197,6 @@ const handlePinSubmit = async (e) => {
             </a> for assistance.
           </div>
         </div>
-
-        {/* Removed Banking Details Section */}
-
-        {/* Removed Upload Proof Section */}
       </div>
     </div>
   );

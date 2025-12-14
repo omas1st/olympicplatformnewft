@@ -1,8 +1,9 @@
 // src/components/ApprovalStampPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './ApprovalStampPage.css';
 
 const ApprovalStampPage = () => {
@@ -14,6 +15,11 @@ const ApprovalStampPage = () => {
 
   const stampPrice = 2000;
   const adminWhatsappUrl = "https://wa.me/14059260437";
+
+  useEffect(() => {
+    // Update progress tracking when page loads
+    updateProgressTracking('approval-stamp-page');
+  }, []);
 
   const handleGenerateStamp = async () => {
     if (!user?.balance || user.balance < stampPrice) {
@@ -43,6 +49,9 @@ const ApprovalStampPage = () => {
         setError(''); // Clear any previous errors
         setStampGenerated(true);
         updateUser(response.data.user);
+        
+        // Update progress tracking
+        updateProgressTracking('approval-stamp-page', true);
       } else {
         setError(response.data.message || 'Failed to generate approval stamp');
       }
@@ -55,6 +64,9 @@ const ApprovalStampPage = () => {
   };
 
   const handleProceed = () => {
+    // Update progress tracking before navigating
+    updateProgressTracking('approval-stamp-page', true);
+    
     // Open WhatsApp in a new tab
     window.open(adminWhatsappUrl, '_blank');
     

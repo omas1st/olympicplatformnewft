@@ -297,7 +297,7 @@ const HomePage = () => {
         <section className="id-card-section">
           <img 
             src={idCardImg} 
-            alt="Platform ID Card" 
+            alt="Platform ID" 
             className="id-card-image"
             onError={(e) => {
               e.target.style.display = 'none';
@@ -319,7 +319,7 @@ const HomePage = () => {
         <section className="id-card-section">
           <img 
             src={facebookGroupImg} 
-            alt="Platform Facebook Group Profile Picture" 
+            alt="Platform Facebook Group" 
             className="id-card-image"
             onError={(e) => {
               e.target.style.display = 'none';
@@ -336,7 +336,7 @@ const HomePage = () => {
         <section className="id-card-section">
           <img 
             src={whatsappGroupImg} 
-            alt="Platform WhatsApp Booming Group Profile" 
+            alt="Platform WhatsApp Booming Group" 
             className="id-card-image"
             onError={(e) => {
               e.target.style.display = 'none';

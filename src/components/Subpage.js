@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 import './Subpage.css';
 
 const Subpage = () => {
@@ -16,24 +17,24 @@ const Subpage = () => {
   const planOptions = [
     '1 Day - (3 numbers + bonus lunchtime only) - R700',
     '1 Day - (3 numbers + bonus teatime only) - R700',
-    '1 Day - (4 numbers + bonus - Powerball) - R1000',
+    '1 Day - (3 numbers - Powerball) - R700',
     '3 Days - (3 numbers + bonus lunchtime) - R2000',
     '3 Days - (3 numbers + bonus teatime) - R2000',
     '7 Days - (3 numbers + bonus lunchtime) - R4500',
     '7 Days - (3 numbers + bonus teatime) - R4500',
-    '4 numbers (Russian Goslotto) - R700',
+    '3 numbers (Russian Goslotto) - R700',
     '7 days lunchtime and teatime - R2000'
   ];
 
   const planPrices = {
     '1 Day - (3 numbers + bonus lunchtime only) - R700': 700,
     '1 Day - (3 numbers + bonus teatime only) - R700': 700,
-    '1 Day - (4 numbers + bonus - Powerball) - R1000': 1000,
+    '1 Day - (3 numbers - Powerball) - R700': 700,
     '3 Days - (3 numbers + bonus lunchtime) - R2000': 2000,
     '3 Days - (3 numbers + bonus teatime) - R2000': 2000,
     '7 Days - (3 numbers + bonus lunchtime) - R4500': 4500,
     '7 Days - (3 numbers + bonus teatime) - R4500': 4500,
-    '4 numbers (Russian Goslotto) - R700': 700,
+    '3 numbers (Russian Goslotto) - R700': 700,
     '7 days lunchtime and teatime - R2000': 2000
   };
 
@@ -41,6 +42,9 @@ const Subpage = () => {
     if (user?.balance) {
       setUserBalance(user.balance);
     }
+    
+    // Update progress tracking when page loads
+    updateProgressTracking('subpage');
   }, [user]);
 
   const handleSubscribe = async () => {
@@ -106,6 +110,9 @@ const Subpage = () => {
             localStorage.setItem('user', JSON.stringify(updatedUser));
           }
         }
+        
+        // Update progress tracking before navigating
+        updateProgressTracking('subpage', true);
         
         // Redirect after 2 seconds
         setTimeout(() => {

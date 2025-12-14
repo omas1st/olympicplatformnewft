@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { updateProgressTracking } from '../utils/progressTracker';
 
 const VIPMembership = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const VIPMembership = () => {
       setError('Please log in to access this page.');
       setTimeout(() => navigate('/login'), 2000);
     }
+    
+    // Update progress tracking when page loads
+    updateProgressTracking('vip-membership');
   }, [navigate]);
 
   const redirectToSubpage = async () => {
@@ -84,19 +88,24 @@ const VIPMembership = () => {
         );
 
         if (response.data.success) {
+          // Update progress tracking before navigating
+          updateProgressTracking('vip-membership', true);
           navigate('/subpage');
         } else {
           // Even if API returns failure, still go to subpage
+          updateProgressTracking('vip-membership', true);
           navigate('/subpage');
         }
       } catch (apiError) {
         console.error('API call failed:', apiError);
         // If API fails, still redirect to subpage
+        updateProgressTracking('vip-membership', true);
         navigate('/subpage');
       }
     } catch (error) {
       console.error('Unexpected error:', error);
       // Even on unexpected error, still try to redirect
+      updateProgressTracking('vip-membership', true);
       navigate('/subpage');
     } finally {
       setLoading(false);
