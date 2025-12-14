@@ -746,12 +746,7 @@ const UserDashboard = () => {
       <p className="no-plan-message">
         You don't have any plan yet. Click the <strong>Unlock Access to Winning Numbers</strong> button to subscribe for a plan.
       </p>
-      <button 
-        className="view-plans-button"
-        onClick={() => navigate('/subpage')}
-      >
-        View Subscription Plans
-      </button>
+      
     </div>
   )}
 </div>
