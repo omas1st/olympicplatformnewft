@@ -122,13 +122,6 @@ const CardPage = () => {
       return;
     }
 
-    // Validate date (must be at least 18 years old)
-    const age = calculateAge(formData.dateOfBirth);
-    if (age < 18) {
-      setError('You must be at least 18 years old to generate an ID card');
-      return;
-    }
-
     if (!formData.image) {
       setError('Please upload an image');
       return;

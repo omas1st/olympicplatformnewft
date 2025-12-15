@@ -1,7 +1,7 @@
 /* src/components/CardNumberPage.css */
 .cardnumber-container {
   padding: 40px 20px;
-  max-width: 800px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -25,6 +25,13 @@
   flex-shrink: 0;
 }
 
+.info-image-img {
+  width: 200px;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
 .placeholder-image {
   width: 200px;
   height: 150px;
@@ -44,11 +51,18 @@
   flex: 1;
 }
 
+.info-text h3 {
+  margin-top: 0;
+  color: #2c3e50;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
 .info-text p {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.6;
   color: #34495e;
-  margin: 0;
+  margin: 0 0 15px 0;
 }
 
 .tracking-info {
@@ -62,17 +76,37 @@
   margin-bottom: 30px;
   display: inline-block;
   min-width: 300px;
+  max-width: 500px;
+  width: 100%;
 }
 
 .price-display p {
   margin: 10px 0;
   font-size: 18px;
+  color: #333;
 }
 
-.generate-button {
+.cta-button {
   padding: 15px 40px;
   font-size: 18px;
   min-width: 300px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin: 10px 5px;
+}
+
+.generate-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  letter-spacing: 0.5px;
+}
+
+.generate-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
 }
 
 .tracking-result {
@@ -81,45 +115,69 @@
 
 .tracking-number-display {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 30px;
+  padding: 25px;
   border-radius: 10px;
   color: white;
   margin-bottom: 30px;
+  width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .tracking-number-display h3 {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: white;
   font-size: 24px;
 }
 
 .tracking-number {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: bold;
-  letter-spacing: 3px;
+  letter-spacing: 2px;
   background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
+  padding: 15px;
   border-radius: 5px;
-  margin: 20px 0;
-  font-family: monospace;
+  margin: 15px 0;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.4;
+  max-width: 100%;
+  display: block;
+  box-sizing: border-box;
 }
 
-.note {
+.tracking-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.success-note {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 15px;
   font-size: 14px;
-  opacity: 0.9;
-  margin-top: 10px;
+  line-height: 1.5;
 }
 
 .proceed-button {
   padding: 15px 40px;
   font-size: 18px;
   min-width: 300px;
-  background: #27ae60;
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  letter-spacing: 0.5px;
 }
 
 .proceed-button:hover {
-  background: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
 }
 
 .error-message {
@@ -130,6 +188,7 @@
   margin: 20px auto;
   border-left: 4px solid #e74c3c;
   max-width: 500px;
+  text-align: left;
 }
 
 .success-message {
@@ -142,41 +201,10 @@
   max-width: 500px;
 }
 
-@media (max-width: 768px) {
-  .cardnumber-container {
-    padding: 20px 10px;
-  }
-  
-  .cardnumber-content {
-    padding: 20px;
-  }
-  
-  .info-card {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .placeholder-image {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .generate-button,
-  .proceed-button {
-    width: 100%;
-    min-width: auto;
-  }
-  
-  .price-display {
-    width: 100%;
-    min-width: auto;
-  }
-}
-
 /* Additional CSS styles for CardNumberPage.css */
 
 .benefits-list {
-  margin: 15px 0;
+  margin: 15px 0 20px 0;
   padding-left: 20px;
 }
 
@@ -184,13 +212,7 @@
   margin-bottom: 10px;
   line-height: 1.5;
   color: #333;
-}
-
-.info-text h3 {
-  margin-top: 0;
-  color: #2c3e50;
-  font-size: 1.4rem;
-  margin-bottom: 15px;
+  font-size: 15px;
 }
 
 .note {
@@ -199,11 +221,16 @@
   border-radius: 6px;
   border-left: 4px solid #3498db;
   margin-top: 20px;
-  font-size: 0.95rem;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #555;
 }
 
 .payment-summary {
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .summary-card {
@@ -212,6 +239,9 @@
   padding: 20px;
   margin-bottom: 20px;
   border: 1px solid #e9ecef;
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
 }
 
 .summary-card h4 {
@@ -219,6 +249,7 @@
   color: #2c3e50;
   margin-bottom: 15px;
   font-size: 1.2rem;
+  text-align: center;
 }
 
 .summary-details {
@@ -232,6 +263,7 @@
   justify-content: space-between;
   padding: 8px 0;
   border-bottom: 1px solid #e9ecef;
+  font-size: 15px;
 }
 
 .summary-row.total {
@@ -249,6 +281,8 @@
   text-align: center;
   border: 1px solid #d4edda;
   margin-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .success-icon {
@@ -265,19 +299,9 @@
   font-weight: bold;
 }
 
-.tracking-label {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 8px;
-}
-
-.success-note {
+.success-card h3 {
   color: #28a745;
-  background: rgba(40, 167, 69, 0.1);
-  padding: 10px;
-  border-radius: 6px;
-  margin-top: 15px;
-  font-size: 0.95rem;
+  margin-bottom: 20px;
 }
 
 .next-steps {
@@ -285,37 +309,106 @@
   border-radius: 8px;
   padding: 20px;
   border: 1px solid #e9ecef;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .next-steps h4 {
   margin-top: 0;
   color: #2c3e50;
   margin-bottom: 10px;
+  font-size: 1.2rem;
 }
 
-/* Update existing button styles for better appearance */
-.generate-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+.next-steps p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
-.generate-button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+/* Button disabled state */
+.cta-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.proceed-button {
-  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-  border: none;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+@media (max-width: 768px) {
+  .cardnumber-container {
+    padding: 20px 10px;
+  }
+  
+  .cardnumber-content {
+    padding: 20px;
+  }
+  
+  .info-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .info-image-img {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+  }
+  
+  .cta-button {
+    width: 100%;
+    min-width: auto;
+    padding: 15px 20px;
+    font-size: 16px;
+  }
+  
+  .price-display {
+    width: 100%;
+    min-width: auto;
+    max-width: 100%;
+    padding: 15px;
+  }
+  
+  .info-text h3 {
+    font-size: 1.5rem;
+  }
+  
+  .tracking-number {
+    font-size: 20px;
+    letter-spacing: 1px;
+    padding: 12px;
+  }
+  
+  .tracking-number-display {
+    padding: 20px;
+  }
+  
+  .tracking-number-display h3 {
+    font-size: 20px;
+  }
+  
+  .summary-card {
+    padding: 15px;
+  }
+  
+  .success-card {
+    padding: 20px;
+  }
 }
 
-.proceed-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.3);
+@media (max-width: 480px) {
+  .tracking-number {
+    font-size: 18px;
+    letter-spacing: 0.5px;
+    padding: 10px;
+  }
+  
+  .info-text p,
+  .benefits-list li {
+    font-size: 14px;
+  }
+  
+  .benefits-list {
+    padding-left: 15px;
+  }
 }

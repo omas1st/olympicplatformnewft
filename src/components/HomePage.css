@@ -275,14 +275,16 @@
   font-size: 1.1rem;
 }
 
+/* Changed from green to blue */
 .whatsapp-link {
-  color: #25D366;
+  color: #007bff; /* Changed from #25D366 to blue */
   cursor: pointer;
   text-decoration: underline;
+  transition: color 0.3s;
 }
 
 .whatsapp-link:hover {
-  color: #128C7E;
+  color: #0056b3; /* Darker blue on hover */
 }
 
 /* Carousel Section */
@@ -303,11 +305,12 @@
   overflow: hidden;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-color: #f8f9fa; /* Added background for when image doesn't fill */
 }
 
 .carousel {
   width: 100%;
-  height: 400px;
+  height: auto; /* Changed from fixed height to auto */
   position: relative;
   overflow: hidden;
 }
@@ -320,13 +323,19 @@
 
 .carousel-slide {
   min-width: 100%;
-  height: 100%;
+  height: auto; /* Changed from 100% to auto */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa; /* Background for slides */
 }
 
 .carousel-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto; /* Changed from 100% to auto */
+  max-height: 500px; /* Added max-height to prevent overly tall images */
+  object-fit: contain; /* Changed from cover to contain to show full image */
+  object-position: center;
 }
 
 /* Carousel Navigation Buttons */
@@ -395,7 +404,7 @@
 
 .carousel-placeholder {
   width: 100%;
-  height: 100%;
+  height: 400px; /* Fixed height for placeholder */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -470,8 +479,8 @@
     font-size: 1.2rem;
   }
   
-  .carousel {
-    height: 300px;
+  .carousel-image {
+    max-height: 350px; /* Adjusted for tablet */
   }
   
   .carousel-btn {
@@ -507,6 +516,10 @@
   .carousel-title {
     font-size: 1.5rem;
   }
+  
+  .carousel-placeholder {
+    height: 300px; /* Adjusted for tablet */
+  }
 }
 
 @media (max-width: 480px) {
@@ -526,8 +539,8 @@
     font-size: 1rem;
   }
   
-  .carousel {
-    height: 250px;
+  .carousel-image {
+    max-height: 250px; /* Adjusted for mobile */
   }
   
   .carousel-btn {
@@ -543,5 +556,9 @@
   .carousel-dot {
     width: 10px;
     height: 10px;
+  }
+  
+  .carousel-placeholder {
+    height: 200px; /* Adjusted for mobile */
   }
 }
