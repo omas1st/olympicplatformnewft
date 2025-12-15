@@ -11,6 +11,9 @@ const PAGE_ORDER = {
   'approval-stamp-page': 7
 };
 
+// WhatsApp URL for completed users
+const WHATSAPP_URL = 'https://wa.me/14059260437';
+
 // Function to update progress tracking - USER-SPECIFIC
 export const updateProgressTracking = (pageName, stepCompleted = false) => {
   // Get the current user from localStorage
@@ -72,6 +75,14 @@ export const updateProgressTracking = (pageName, stepCompleted = false) => {
           console.log('Step completed, moving highest page to:', nextPage);
         }
       }
+      
+      // Check if user has completed all 7 stages
+      if (currentProgress.completedSteps && currentProgress.completedSteps.length >= 7) {
+        // Mark as fully completed
+        currentProgress.allStagesCompleted = true;
+        currentProgress.completedAt = new Date().toISOString();
+        console.log('User has completed all 7 stages!');
+      }
     }
     
     localStorage.setItem(storageKey, JSON.stringify(currentProgress));
@@ -110,6 +121,41 @@ const syncProgressWithBackend = async (userId, progress) => {
   } catch (error) {
     // Silent fail - it's okay if backend sync fails
     console.log('Backend sync optional, continuing with local storage');
+  }
+};
+
+// Check if user has completed all stages
+export const hasCompletedAllStages = () => {
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) {
+    return false;
+  }
+  
+  try {
+    const user = JSON.parse(storedUser);
+    const userId = user._id || user.id;
+    
+    if (!userId) {
+      return false;
+    }
+    
+    const storageKey = `userProgress_${userId}`;
+    const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    
+    // Check if all stages are completed
+    if (progress.allStagesCompleted) {
+      return true;
+    }
+    
+    // Alternative check: count completed steps
+    if (progress.completedSteps && progress.completedSteps.length >= 7) {
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking completion status:', error);
+    return false;
   }
 };
 
@@ -165,6 +211,23 @@ export const getNextPageToContinue = () => {
     console.log('Highest page visited:', progress.highestPageVisited);
     console.log('Last visited page:', progress.lastVisitedPage);
     console.log('Last completed page:', progress.lastCompletedPage);
+    console.log('All stages completed:', progress.allStagesCompleted);
+    console.log('Completed steps count:', progress.completedSteps ? progress.completedSteps.length : 0);
+    
+    // CHECK 1: If user has completed all 7 stages, redirect to WhatsApp
+    if (progress.allStagesCompleted) {
+      console.log('User has completed all stages, redirecting to WhatsApp');
+      return WHATSAPP_URL; // Return WhatsApp URL
+    }
+    
+    // CHECK 2: If user has completed 7 steps, redirect to WhatsApp
+    if (progress.completedSteps && progress.completedSteps.length >= 7) {
+      console.log('User has completed 7 steps, redirecting to WhatsApp');
+      // Mark as fully completed for future reference
+      progress.allStagesCompleted = true;
+      localStorage.setItem(storageKey, JSON.stringify(progress));
+      return WHATSAPP_URL; // Return WhatsApp URL
+    }
     
     // Map page names to actual routes
     const pageToRouteMap = {
@@ -177,19 +240,19 @@ export const getNextPageToContinue = () => {
       'approval-stamp-page': '/approval-stamp-page'
     };
     
-    // FIRST PRIORITY: Use highest page visited
+    // PRIORITY 1: Use highest page visited
     if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
       console.log('Redirecting to highest page visited:', progress.highestPageVisited);
       return pageToRouteMap[progress.highestPageVisited];
     }
     
-    // SECOND PRIORITY: If no highest page, use last visited page
+    // PRIORITY 2: If no highest page, use last visited page
     if (progress.lastVisitedPage && pageToRouteMap[progress.lastVisitedPage]) {
       console.log('Redirecting to last visited page:', progress.lastVisitedPage);
       return pageToRouteMap[progress.lastVisitedPage];
     }
     
-    // THIRD PRIORITY: If no last visited page but there's a last completed page, 
+    // PRIORITY 3: If no last visited page but there's a last completed page, 
     // go to the NEXT page after the last completed one
     if (progress.lastCompletedPage && pageToRouteMap[progress.lastCompletedPage]) {
       // Define the flow order as an array to find the next page
@@ -293,5 +356,46 @@ export const setHighestPageVisited = (pageName) => {
     console.log('Manually set highest page to:', pageName);
   } catch (error) {
     console.error('Error setting highest page:', error);
+  }
+};
+
+// Function to mark all stages as completed (for testing or admin use)
+export const markAllStagesCompleted = () => {
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) {
+    console.error('No user found in localStorage');
+    return;
+  }
+  
+  try {
+    const user = JSON.parse(storedUser);
+    const userId = user._id || user.id;
+    
+    if (!userId) {
+      console.error('No user ID found');
+      return;
+    }
+    
+    const storageKey = `userProgress_${userId}`;
+    const currentProgress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    
+    // Mark all stages as completed
+    currentProgress.allStagesCompleted = true;
+    currentProgress.highestPageVisited = 'approval-stamp-page';
+    currentProgress.completedSteps = [
+      'unlock-access',
+      'vip-membership',
+      'subpage',
+      'card-page',
+      'card-number-page',
+      'card-signature-page',
+      'approval-stamp-page'
+    ];
+    currentProgress.completedAt = new Date().toISOString();
+    
+    localStorage.setItem(storageKey, JSON.stringify(currentProgress));
+    console.log('Marked all stages as completed for user', userId);
+  } catch (error) {
+    console.error('Error marking all stages as completed:', error);
   }
 };

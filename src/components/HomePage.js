@@ -348,6 +348,45 @@ const HomePage = () => {
             </p>
           </div>
         </section>
+
+        {/* Draw Schedule Section */}
+        <section className="draw-schedule-section">
+          <h2 className="section-title">Draw Schedule</h2>
+          <div className="draw-schedule-content">
+            <div className="draw-schedule-column">
+              <h3>UK 49's LUNCHTIME DRAW</h3>
+              <p>Closing : 13:45pm</p>
+              <p>Draw: 14:00pm</p>
+              
+              <h3>UK 49's TEATIME DRAW</h3>
+              <p>Closing: 18:45pm</p>
+              <p>Draw: 19:00pm</p>
+              
+              <h3>SA POWERBALL DRAW</h3>
+              <p>Every Tuesday</p>
+              <p>closing: 20:58pm</p>
+              <p>Every Friday</p>
+              <p>closing: 20:58pm</p>
+            </div>
+            
+            <div className="draw-schedule-column">
+              <h3>GOSLOTTO 4/20 DAILY</h3>
+              <p>@10:00 Draw</p>
+              <p>@22:00 Draw</p>
+              
+              <h3>GOSLOTTO 5/36 DAILY</h3>
+              <p>@12:00 Draw</p>
+              <p>@15:00 Draw</p>
+              <p>@18:00 Draw</p>
+              <p>@21:00 Draw</p>
+              <p>@23:59 Draw</p>
+              
+              <h3>GOSLOTTO 6/45 DAILY</h3>
+              <p>@11:00 Draw</p>
+              <p>@23:00 Draw</p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
