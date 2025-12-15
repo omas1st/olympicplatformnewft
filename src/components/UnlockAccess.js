@@ -13,7 +13,10 @@ const UnlockAccess = () => {
 
   // Update progress tracking when page loads
   useEffect(() => {
-    updateProgressTracking('unlock-access');
+    const updateProgress = async () => {
+      await updateProgressTracking('unlock-access');
+    };
+    updateProgress();
   }, []);
 
   // Get API URL from environment variables
@@ -100,8 +103,8 @@ const UnlockAccess = () => {
           user.balance = deductResponse.data.user.balance;
           localStorage.setItem('user', JSON.stringify(user));
           
-          // Update progress tracking before navigating
-          updateProgressTracking('unlock-access', true);
+          // Update progress tracking before navigating (mark as completed)
+          await updateProgressTracking('unlock-access', true);
           navigate('/vip-membership');
         } else {
           setPinError('Failed to process payment. Please contact admin.');

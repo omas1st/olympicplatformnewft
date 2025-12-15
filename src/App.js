@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
@@ -25,12 +25,15 @@ import './App.css';
 const ProgressCheckWrapper = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Check if user is trying to access a page they shouldn't be able to
-    const checkProgress = () => {
+    const checkProgress = async () => {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
       
       const currentPath = location.pathname.replace('/', '');
       const protectedPages = [
@@ -41,54 +44,70 @@ const ProgressCheckWrapper = ({ children }) => {
       // If user is accessing a protected page, check their progress
       if (protectedPages.includes(currentPath)) {
         try {
-          // Get progress from localStorage
-          const storedUser = localStorage.getItem('user');
-          if (!storedUser) return;
+          const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
           
-          const user = JSON.parse(storedUser);
-          const userId = user._id || user.id;
-          const storageKey = `userProgress_${userId}`;
-          const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+          // Get user progress from database
+          const response = await fetch(`${API_URL}/api/user/progress`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
           
-          // Define page hierarchy
-          const PAGE_ORDER = {
-            'unlock-access': 1,
-            'vip-membership': 2,
-            'subpage': 3,
-            'card-page': 4,
-            'card-number-page': 5,
-            'card-signature-page': 6,
-            'approval-stamp-page': 7
-          };
-          
-          const currentPageOrder = PAGE_ORDER[currentPath] || 1;
-          const highestPageOrder = PAGE_ORDER[progress.highestPageVisited] || 1;
-          
-          // If user hasn't reached this page yet, redirect them to their highest page
-          if (currentPageOrder > highestPageOrder) {
-            // Map page name to route
-            const pageToRouteMap = {
-              'unlock-access': '/unlock-access',
-              'vip-membership': '/vip-membership',
-              'subpage': '/subpage',
-              'card-page': '/card-page',
-              'card-number-page': '/card-number-page',
-              'card-signature-page': '/card-signature-page',
-              'approval-stamp-page': '/approval-stamp-page'
+          if (response.ok) {
+            const data = await response.json();
+            const progress = data.progress || {};
+            
+            // Define page hierarchy
+            const PAGE_ORDER = {
+              'unlock-access': 1,
+              'vip-membership': 2,
+              'subpage': 3,
+              'card-page': 4,
+              'card-number-page': 5,
+              'card-signature-page': 6,
+              'approval-stamp-page': 7
             };
             
-            const redirectTo = pageToRouteMap[progress.highestPageVisited] || '/unlock-access';
-            console.log(`Redirecting from ${currentPath} to ${redirectTo} (higher page not reached)`);
-            navigate(redirectTo);
+            const currentPageOrder = PAGE_ORDER[currentPath] || 1;
+            const highestPageOrder = PAGE_ORDER[progress.highestPageVisited] || 1;
+            
+            // If user hasn't reached this page yet, redirect them to their highest page
+            if (currentPageOrder > highestPageOrder) {
+              // Map page name to route
+              const pageToRouteMap = {
+                'unlock-access': '/unlock-access',
+                'vip-membership': '/vip-membership',
+                'subpage': '/subpage',
+                'card-page': '/card-page',
+                'card-number-page': '/card-number-page',
+                'card-signature-page': '/card-signature-page',
+                'approval-stamp-page': '/approval-stamp-page'
+              };
+              
+              const redirectTo = pageToRouteMap[progress.highestPageVisited] || '/unlock-access';
+              console.log(`Redirecting from ${currentPath} to ${redirectTo} (higher page not reached)`);
+              navigate(redirectTo);
+            }
           }
         } catch (error) {
           console.error('Progress check error:', error);
         }
       }
+      setIsLoading(false);
     };
     
     checkProgress();
   }, [location, navigate]);
+  
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <div className="loading-text">Checking your access...</div>
+      </div>
+    );
+  }
   
   return children;
 };

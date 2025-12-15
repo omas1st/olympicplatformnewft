@@ -18,7 +18,10 @@ const CardNumberPage = () => {
 
   useEffect(() => {
     // Update progress tracking when page loads
-    updateProgressTracking('card-number-page');
+    const updateProgress = async () => {
+      await updateProgressTracking('card-number-page');
+    };
+    updateProgress();
   }, []);
 
   const handleGenerateTracking = async () => {
@@ -52,7 +55,7 @@ const CardNumberPage = () => {
         updateUser(response.data.user);
         
         // Update progress tracking
-        updateProgressTracking('card-number-page', true);
+        await updateProgressTracking('card-number-page', true);
       } else {
         setError(response.data.message || 'Failed to generate tracking number');
       }
@@ -64,9 +67,9 @@ const CardNumberPage = () => {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     // Update progress tracking before navigating
-    updateProgressTracking('card-number-page', true);
+    await updateProgressTracking('card-number-page', true);
     navigate('/card-signature-page');
   };
 

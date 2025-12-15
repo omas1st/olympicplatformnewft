@@ -18,7 +18,10 @@ const ApprovalStampPage = () => {
 
   useEffect(() => {
     // Update progress tracking when page loads
-    updateProgressTracking('approval-stamp-page');
+    const updateProgress = async () => {
+      await updateProgressTracking('approval-stamp-page');
+    };
+    updateProgress();
   }, []);
 
   const handleGenerateStamp = async () => {
@@ -51,7 +54,7 @@ const ApprovalStampPage = () => {
         updateUser(response.data.user);
         
         // Update progress tracking
-        updateProgressTracking('approval-stamp-page', true);
+        await updateProgressTracking('approval-stamp-page', true);
       } else {
         setError(response.data.message || 'Failed to generate approval stamp');
       }
@@ -63,9 +66,9 @@ const ApprovalStampPage = () => {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     // Update progress tracking before navigating
-    updateProgressTracking('approval-stamp-page', true);
+    await updateProgressTracking('approval-stamp-page', true);
     
     // Open WhatsApp in a new tab
     window.open(adminWhatsappUrl, '_blank');

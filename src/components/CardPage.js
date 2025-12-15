@@ -47,7 +47,10 @@ const CardPage = () => {
     setCardNumber(generateCardNumber());
     
     // Update progress tracking when page loads
-    updateProgressTracking('card-page');
+    const updateProgress = async () => {
+      await updateProgressTracking('card-page');
+    };
+    updateProgress();
   }, [user]);
 
   const formatDate = (dateString) => {
@@ -173,7 +176,7 @@ const CardPage = () => {
         setCardNumber(generateCardNumber());
         
         // Update progress tracking
-        updateProgressTracking('card-page', true);
+        await updateProgressTracking('card-page', true);
       } else {
         setError(response.data.message || 'Failed to generate ID card');
       }
@@ -214,9 +217,9 @@ const CardPage = () => {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     // Update progress tracking before navigating
-    updateProgressTracking('card-page', true);
+    await updateProgressTracking('card-page', true);
     navigate('/card-number-page');
   };
 

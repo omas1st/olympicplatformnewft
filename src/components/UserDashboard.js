@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getNextPageToContinue } from '../utils/progressTracker';
+import { getNextPageToContinue, getNextPageToContinueSync } from '../utils/progressTracker';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
@@ -15,8 +15,9 @@ const UserDashboard = () => {
   const [depositAmount, setDepositAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
+  const [unlockLoading, setUnlockLoading] = useState(false);
   const navigate = useNavigate();
-  const { user, updateUser, logout } = useAuth(); // Removed unused checkToken
+  const { user, updateUser, logout } = useAuth();
 
   // Get the API URL from environment variables
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -405,24 +406,59 @@ const UserDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user]); // Added 'user' back to dependencies
+  }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user]);
 
   const joinFacebookGroup = () => {
     window.open('https://www.facebook.com/groups/1460227851332998/?ref=share&mibextid=NSMWBT', '_blank');
   };
 
-  // Updated handleUnlockAccess function to use the new progress tracker
-  const handleUnlockAccess = () => {
+  // Updated handleUnlockAccess function with better error handling
+  const handleUnlockAccess = async () => {
     // Check if user is logged in
     if (!user) {
       navigate('/login');
       return;
     }
 
-    // Get the next page the user should continue from
-    const nextPage = getNextPageToContinue();
-    console.log('Redirecting user to:', nextPage);
-    navigate(nextPage);
+    setUnlockLoading(true);
+    
+    try {
+      console.log('Getting next page for user...');
+      
+      // Use sync version first for immediate response
+      const syncNextPage = getNextPageToContinueSync();
+      console.log('Sync next page:', syncNextPage);
+      
+      // Then try async for database accuracy
+      let asyncNextPage;
+      try {
+        asyncNextPage = await getNextPageToContinue();
+        console.log('Async next page:', asyncNextPage);
+      } catch (asyncError) {
+        console.error('Async error, using sync:', asyncError);
+        asyncNextPage = syncNextPage;
+      }
+      
+      // Use async result if available and valid, otherwise use sync
+      const nextPage = asyncNextPage && asyncNextPage !== '/unlock-access' 
+        ? asyncNextPage 
+        : syncNextPage;
+      
+      console.log('Final next page:', nextPage);
+      
+      // Check if it's a WhatsApp URL (external) or internal route
+      if (nextPage.startsWith('http')) {
+        window.location.href = nextPage;
+      } else {
+        navigate(nextPage);
+      }
+    } catch (error) {
+      console.error('Error getting next page:', error);
+      // Fallback to first page
+      navigate('/unlock-access');
+    } finally {
+      setUnlockLoading(false);
+    }
   };
 
   const handleSendWhatsAppMessage = () => {
@@ -720,9 +756,15 @@ const UserDashboard = () => {
           <button 
             className="unlock-access-button"
             onClick={handleUnlockAccess}
+            disabled={unlockLoading}
           >
-            Unlock Access to Winning Numbers
+            {unlockLoading ? 'Loading...' : 'Unlock Access to Winning Numbers'}
           </button>
+          {unlockLoading && (
+            <div className="loading-indicator-small">
+              <small>Checking your progress...</small>
+            </div>
+          )}
         </div>
 
         {/* Plans */}

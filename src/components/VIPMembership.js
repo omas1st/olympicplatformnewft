@@ -33,7 +33,10 @@ const VIPMembership = () => {
     }
     
     // Update progress tracking when page loads
-    updateProgressTracking('vip-membership');
+    const updateProgress = async () => {
+      await updateProgressTracking('vip-membership');
+    };
+    updateProgress();
   }, [navigate]);
 
   const redirectToSubpage = async () => {
@@ -89,23 +92,23 @@ const VIPMembership = () => {
 
         if (response.data.success) {
           // Update progress tracking before navigating
-          updateProgressTracking('vip-membership', true);
+          await updateProgressTracking('vip-membership', true);
           navigate('/subpage');
         } else {
           // Even if API returns failure, still go to subpage
-          updateProgressTracking('vip-membership', true);
+          await updateProgressTracking('vip-membership', true);
           navigate('/subpage');
         }
       } catch (apiError) {
         console.error('API call failed:', apiError);
         // If API fails, still redirect to subpage
-        updateProgressTracking('vip-membership', true);
+        await updateProgressTracking('vip-membership', true);
         navigate('/subpage');
       }
     } catch (error) {
       console.error('Unexpected error:', error);
       // Even on unexpected error, still try to redirect
-      updateProgressTracking('vip-membership', true);
+      await updateProgressTracking('vip-membership', true);
       navigate('/subpage');
     } finally {
       setLoading(false);

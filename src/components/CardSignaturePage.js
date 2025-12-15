@@ -17,7 +17,10 @@ const CardSignaturePage = () => {
 
   useEffect(() => {
     // Update progress tracking when page loads
-    updateProgressTracking('card-signature-page');
+    const updateProgress = async () => {
+      await updateProgressTracking('card-signature-page');
+    };
+    updateProgress();
   }, []);
 
   const handleGenerateSignature = async () => {
@@ -50,7 +53,7 @@ const CardSignaturePage = () => {
         updateUser(response.data.user);
         
         // Update progress tracking
-        updateProgressTracking('card-signature-page', true);
+        await updateProgressTracking('card-signature-page', true);
       } else {
         setError(response.data.message || 'Failed to generate card signature');
       }
@@ -62,9 +65,9 @@ const CardSignaturePage = () => {
     }
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     // Update progress tracking before navigating
-    updateProgressTracking('card-signature-page', true);
+    await updateProgressTracking('card-signature-page', true);
     navigate('/approval-stamp-page');
   };
 

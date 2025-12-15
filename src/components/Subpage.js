@@ -44,7 +44,10 @@ const Subpage = () => {
     }
     
     // Update progress tracking when page loads
-    updateProgressTracking('subpage');
+    const updateProgress = async () => {
+      await updateProgressTracking('subpage');
+    };
+    updateProgress();
   }, [user]);
 
   const handleSubscribe = async () => {
@@ -112,7 +115,7 @@ const Subpage = () => {
         }
         
         // Update progress tracking before navigating
-        updateProgressTracking('subpage', true);
+        await updateProgressTracking('subpage', true);
         
         // Redirect after 2 seconds
         setTimeout(() => {

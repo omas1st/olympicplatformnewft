@@ -14,29 +14,53 @@ const PAGE_ORDER = {
 // WhatsApp URL for completed users
 const WHATSAPP_URL = 'https://wa.me/14059260437';
 
-// Function to update progress tracking - USER-SPECIFIC
-export const updateProgressTracking = (pageName, stepCompleted = false) => {
-  // Get the current user from localStorage
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    console.error('No user found in localStorage for progress tracking');
-    return;
+// Helper function to get API URL
+const getApiUrl = () => {
+  let API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  
+  // Clean up the API URL
+  API_URL = API_URL.replace(/\/$/, ''); // Remove trailing slash
+  
+  // Ensure we don't have double /api
+  if (API_URL.endsWith('/api')) {
+    API_URL = API_URL.slice(0, -4);
   }
   
+  return API_URL;
+};
+
+// Function to update progress tracking in MongoDB
+export const updateProgressTracking = async (pageName, stepCompleted = false) => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No authentication token found');
+      return null;
+    }
+
+    const API_URL = getApiUrl();
     
-    if (!userId) {
-      console.error('No user ID found for progress tracking');
-      return;
+    // First get current progress from database
+    let currentProgress = { highestPageVisited: 'unlock-access' };
+    
+    try {
+      const progressResponse = await fetch(`${API_URL}/api/user/progress`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (progressResponse.ok) {
+        const progressData = await progressResponse.json();
+        currentProgress = progressData.progress || { highestPageVisited: 'unlock-access' };
+        console.log('Current progress from DB:', currentProgress);
+      }
+    } catch (error) {
+      console.error('Error fetching current progress:', error);
     }
     
-    // Use user-specific key
-    const storageKey = `userProgress_${userId}`;
-    const currentProgress = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    
-    // Initialize if empty
+    // Update the progress object
     currentProgress.lastVisitedPage = pageName;
     currentProgress.lastVisitedTime = new Date().toISOString();
     
@@ -49,98 +73,243 @@ export const updateProgressTracking = (pageName, stepCompleted = false) => {
     const currentPageOrder = PAGE_ORDER[pageName] || 1;
     const currentHighestOrder = PAGE_ORDER[currentProgress.highestPageVisited] || 1;
     
-    // Update highest page visited - only if current page is higher in hierarchy
+    console.log(`Current page: ${pageName} (order: ${currentPageOrder}), Highest: ${currentProgress.highestPageVisited} (order: ${currentHighestOrder})`);
+    
+    // Update highest page visited if current page is higher
     if (currentPageOrder > currentHighestOrder) {
       currentProgress.highestPageVisited = pageName;
-      console.log('Updated highest page to:', pageName);
+      console.log(`Updated highest page from ${currentProgress.highestPageVisited} to ${pageName}`);
     }
     
-    // Update last completed page if step is completed
+    // If step is completed, update completed steps
     if (stepCompleted) {
       currentProgress.lastCompletedPage = pageName;
       currentProgress.completedSteps = currentProgress.completedSteps || [];
+      
       if (!currentProgress.completedSteps.includes(pageName)) {
         currentProgress.completedSteps.push(pageName);
       }
       
-      // When a step is completed, also update highest page to the next one
-      // This ensures if user completes a page, they move forward
-      if (currentPageOrder < 7) { // 7 is the last page
-        // Find the next page
+      // Move to next page after completion
+      if (currentPageOrder < 7) {
         const nextPage = Object.keys(PAGE_ORDER).find(
           key => PAGE_ORDER[key] === currentPageOrder + 1
         );
         if (nextPage) {
           currentProgress.highestPageVisited = nextPage;
-          console.log('Step completed, moving highest page to:', nextPage);
+          console.log(`Step completed, moving to next page: ${nextPage}`);
         }
       }
       
-      // Check if user has completed all 7 stages
+      // Check if all stages are completed
       if (currentProgress.completedSteps && currentProgress.completedSteps.length >= 7) {
-        // Mark as fully completed
         currentProgress.allStagesCompleted = true;
         currentProgress.completedAt = new Date().toISOString();
-        console.log('User has completed all 7 stages!');
+        console.log('All 7 stages completed!');
       }
     }
     
-    localStorage.setItem(storageKey, JSON.stringify(currentProgress));
-    console.log('Progress updated for user', userId, ':', currentProgress);
+    // Also update localStorage as backup
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        const userId = user._id || user.id;
+        const storageKey = `userProgress_${userId}`;
+        localStorage.setItem(storageKey, JSON.stringify(currentProgress));
+      }
+    } catch (e) {
+      console.log('Failed to update localStorage backup:', e);
+    }
     
-    // Also sync with backend if available (optional)
-    syncProgressWithBackend(userId, currentProgress);
+    // Send update to backend
+    try {
+      const response = await fetch(`${API_URL}/api/user/update-progress`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          progressData: currentProgress
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Progress saved to database:', result);
+        return currentProgress;
+      } else {
+        console.error('Failed to save progress to database:', response.status);
+        return currentProgress; // Still return progress even if DB save fails
+      }
+    } catch (error) {
+      console.error('Error saving progress to database:', error);
+      return currentProgress; // Return progress even if DB save fails
+    }
+    
   } catch (error) {
-    console.error('Error updating progress tracking:', error);
+    console.error('Error in updateProgressTracking:', error);
+    return null;
   }
 };
 
-// Sync progress with backend (optional)
-const syncProgressWithBackend = async (userId, progress) => {
+// Function to get the next page user should go to
+export const getNextPageToContinue = async () => {
   try {
     const token = localStorage.getItem('token');
-    if (!token) return;
-    
-    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-    
-    // We'll only try to sync if we have an API URL and token
-    const response = await fetch(`${API_URL}/api/user/update-progress`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        progressData: progress
-      })
-    });
-    
-    if (response.ok) {
-      console.log('Progress synced with backend');
+    if (!token) {
+      console.log('No token found, redirecting to login');
+      return '/unlock-access';
     }
+
+    const API_URL = getApiUrl();
+    console.log('Getting next page from API:', `${API_URL}/api/user/progress`);
+    
+    // Try database first
+    try {
+      const response = await fetch(`${API_URL}/api/user/progress`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const progress = data.progress || {};
+        console.log('Progress from database:', progress);
+        
+        // Map page names to routes
+        const pageToRouteMap = {
+          'unlock-access': '/unlock-access',
+          'vip-membership': '/vip-membership',
+          'subpage': '/subpage',
+          'card-page': '/card-page',
+          'card-number-page': '/card-number-page',
+          'card-signature-page': '/card-signature-page',
+          'approval-stamp-page': '/approval-stamp-page'
+        };
+        
+        // Check if all stages completed
+        if (progress.allStagesCompleted) {
+          console.log('All stages completed, redirecting to WhatsApp');
+          return WHATSAPP_URL;
+        }
+        
+        // Use highest page visited
+        if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
+          console.log('Redirecting to highest page:', progress.highestPageVisited);
+          return pageToRouteMap[progress.highestPageVisited];
+        }
+      } else {
+        console.error('Failed to fetch progress from DB:', response.status);
+      }
+    } catch (dbError) {
+      console.error('Database error, falling back to localStorage:', dbError);
+    }
+    
+    // Fallback to localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        const userId = user._id || user.id;
+        const storageKey = `userProgress_${userId}`;
+        const storedProgress = localStorage.getItem(storageKey);
+        
+        if (storedProgress) {
+          const progress = JSON.parse(storedProgress);
+          console.log('Progress from localStorage:', progress);
+          
+          const pageToRouteMap = {
+            'unlock-access': '/unlock-access',
+            'vip-membership': '/vip-membership',
+            'subpage': '/subpage',
+            'card-page': '/card-page',
+            'card-number-page': '/card-number-page',
+            'card-signature-page': '/card-signature-page',
+            'approval-stamp-page': '/approval-stamp-page'
+          };
+          
+          if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
+            console.log('Using localStorage highest page:', progress.highestPageVisited);
+            return pageToRouteMap[progress.highestPageVisited];
+          }
+        }
+      } catch (e) {
+        console.error('Error reading localStorage:', e);
+      }
+    }
+    
+    // Default to first page
+    console.log('No progress found, defaulting to unlock-access');
+    return '/unlock-access';
+    
   } catch (error) {
-    // Silent fail - it's okay if backend sync fails
-    console.log('Backend sync optional, continuing with local storage');
+    console.error('Error in getNextPageToContinue:', error);
+    return '/unlock-access';
+  }
+};
+
+// Simple sync version
+export const getNextPageToContinueSync = () => {
+  try {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) return '/unlock-access';
+    
+    const user = JSON.parse(storedUser);
+    const userId = user._id || user.id;
+    const storageKey = `userProgress_${userId}`;
+    const storedProgress = localStorage.getItem(storageKey);
+    
+    if (storedProgress) {
+      const progress = JSON.parse(storedProgress);
+      const pageToRouteMap = {
+        'unlock-access': '/unlock-access',
+        'vip-membership': '/vip-membership',
+        'subpage': '/subpage',
+        'card-page': '/card-page',
+        'card-number-page': '/card-number-page',
+        'card-signature-page': '/card-signature-page',
+        'approval-stamp-page': '/approval-stamp-page'
+      };
+      
+      if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
+        return pageToRouteMap[progress.highestPageVisited];
+      }
+    }
+    
+    return '/unlock-access';
+  } catch (error) {
+    console.error('Error in sync function:', error);
+    return '/unlock-access';
   }
 };
 
 // Check if user has completed all stages
-export const hasCompletedAllStages = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    return false;
-  }
-  
+export const hasCompletedAllStages = async () => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       return false;
     }
     
-    const storageKey = `userProgress_${userId}`;
-    const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const API_URL = getApiUrl();
+    
+    const response = await fetch(`${API_URL}/api/user/progress`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      return false;
+    }
+    
+    const data = await response.json();
+    const progress = data.progress || {};
     
     // Check if all stages are completed
     if (progress.allStagesCompleted) {
@@ -160,146 +329,61 @@ export const hasCompletedAllStages = () => {
 };
 
 // Function to get user's highest page visited
-export const getHighestPageVisited = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    console.error('No user found in localStorage');
-    return null;
-  }
-  
+export const getHighestPageVisited = async () => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
-      console.error('No user ID found');
-      return null;
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No authentication token found');
+      return 'unlock-access';
     }
     
-    const storageKey = `userProgress_${userId}`;
-    const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const API_URL = getApiUrl();
     
-    // Return highest page if exists, otherwise last visited page
-    return progress.highestPageVisited || progress.lastVisitedPage || null;
+    const response = await fetch(`${API_URL}/api/user/current-page`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to get current page, defaulting to unlock-access');
+      return 'unlock-access';
+    }
+    
+    const data = await response.json();
+    return data.currentPage || 'unlock-access';
+    
   } catch (error) {
     console.error('Error getting progress tracking:', error);
-    return null;
-  }
-};
-
-// Function to get the next page user should go to (based on highest page)
-export const getNextPageToContinue = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    console.error('No user found in localStorage');
-    return '/unlock-access'; // Default to first page
-  }
-  
-  try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
-      console.error('No user ID found');
-      return '/unlock-access';
-    }
-    
-    const storageKey = `userProgress_${userId}`;
-    const progress = JSON.parse(localStorage.getItem(storageKey) || '{}');
-    
-    console.log('User progress for user', userId, ':', progress);
-    console.log('Highest page visited:', progress.highestPageVisited);
-    console.log('Last visited page:', progress.lastVisitedPage);
-    console.log('Last completed page:', progress.lastCompletedPage);
-    console.log('All stages completed:', progress.allStagesCompleted);
-    console.log('Completed steps count:', progress.completedSteps ? progress.completedSteps.length : 0);
-    
-    // CHECK 1: If user has completed all 7 stages, redirect to WhatsApp
-    if (progress.allStagesCompleted) {
-      console.log('User has completed all stages, redirecting to WhatsApp');
-      return WHATSAPP_URL; // Return WhatsApp URL
-    }
-    
-    // CHECK 2: If user has completed 7 steps, redirect to WhatsApp
-    if (progress.completedSteps && progress.completedSteps.length >= 7) {
-      console.log('User has completed 7 steps, redirecting to WhatsApp');
-      // Mark as fully completed for future reference
-      progress.allStagesCompleted = true;
-      localStorage.setItem(storageKey, JSON.stringify(progress));
-      return WHATSAPP_URL; // Return WhatsApp URL
-    }
-    
-    // Map page names to actual routes
-    const pageToRouteMap = {
-      'unlock-access': '/unlock-access',
-      'vip-membership': '/vip-membership',
-      'subpage': '/subpage',
-      'card-page': '/card-page',
-      'card-number-page': '/card-number-page',
-      'card-signature-page': '/card-signature-page',
-      'approval-stamp-page': '/approval-stamp-page'
-    };
-    
-    // PRIORITY 1: Use highest page visited
-    if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
-      console.log('Redirecting to highest page visited:', progress.highestPageVisited);
-      return pageToRouteMap[progress.highestPageVisited];
-    }
-    
-    // PRIORITY 2: If no highest page, use last visited page
-    if (progress.lastVisitedPage && pageToRouteMap[progress.lastVisitedPage]) {
-      console.log('Redirecting to last visited page:', progress.lastVisitedPage);
-      return pageToRouteMap[progress.lastVisitedPage];
-    }
-    
-    // PRIORITY 3: If no last visited page but there's a last completed page, 
-    // go to the NEXT page after the last completed one
-    if (progress.lastCompletedPage && pageToRouteMap[progress.lastCompletedPage]) {
-      // Define the flow order as an array to find the next page
-      const flowOrderArray = [
-        'unlock-access',
-        'vip-membership',
-        'subpage',
-        'card-page',
-        'card-number-page',
-        'card-signature-page',
-        'approval-stamp-page'
-      ];
-      
-      const currentIndex = flowOrderArray.indexOf(progress.lastCompletedPage);
-      if (currentIndex < flowOrderArray.length - 1) {
-        const nextPage = flowOrderArray[currentIndex + 1];
-        console.log('Redirecting to next page after last completed:', nextPage);
-        return pageToRouteMap[nextPage];
-      }
-    }
-    
-    // Default to first page
-    console.log('No progress found, defaulting to unlock-access');
-    return '/unlock-access';
-  } catch (error) {
-    console.error('Error getting next page:', error);
-    return '/unlock-access';
+    return 'unlock-access';
   }
 };
 
 // Function to get all user progress
-export const getUserProgress = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    return null;
-  }
-  
+export const getUserProgress = async () => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       return null;
     }
     
-    const storageKey = `userProgress_${userId}`;
-    return JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const API_URL = getApiUrl();
+    
+    const response = await fetch(`${API_URL}/api/user/progress`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      return null;
+    }
+    
+    const data = await response.json();
+    return data.progress || {};
+    
   } catch (error) {
     console.error('Error getting user progress:', error);
     return null;
@@ -307,77 +391,110 @@ export const getUserProgress = () => {
 };
 
 // Function to reset user progress
-export const resetUserProgress = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    return;
-  }
-  
+export const resetUserProgress = async () => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
+    const token = localStorage.getItem('token');
+    if (!token) {
       return;
     }
     
-    const storageKey = `userProgress_${userId}`;
-    localStorage.removeItem(storageKey);
-    console.log('Progress reset for user', userId);
+    const API_URL = getApiUrl();
+    
+    const response = await fetch(`${API_URL}/api/user/reset-progress`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      console.log('Progress reset successfully');
+    } else {
+      console.error('Failed to reset progress');
+    }
+    
   } catch (error) {
     console.error('Error resetting progress:', error);
   }
 };
 
 // Function to manually set highest page (for edge cases)
-export const setHighestPageVisited = (pageName) => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    console.error('No user found in localStorage');
-    return;
-  }
-  
+export const setHighestPageVisited = async (pageName) => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
-      console.error('No user ID found');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No authentication token found');
       return;
     }
     
-    const storageKey = `userProgress_${userId}`;
-    const currentProgress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const API_URL = getApiUrl();
     
+    // First get current progress
+    const progressResponse = await fetch(`${API_URL}/api/user/progress`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    let currentProgress = {};
+    if (progressResponse.ok) {
+      const progressData = await progressResponse.json();
+      currentProgress = progressData.progress || {};
+    }
+    
+    // Update the highest page
     currentProgress.highestPageVisited = pageName;
     currentProgress.updatedAt = new Date().toISOString();
     
-    localStorage.setItem(storageKey, JSON.stringify(currentProgress));
-    console.log('Manually set highest page to:', pageName);
+    // Save to database
+    const response = await fetch(`${API_URL}/api/user/update-progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        progressData: currentProgress
+      })
+    });
+    
+    if (response.ok) {
+      console.log('Manually set highest page to:', pageName);
+    } else {
+      console.error('Failed to set highest page');
+    }
+    
   } catch (error) {
     console.error('Error setting highest page:', error);
   }
 };
 
 // Function to mark all stages as completed (for testing or admin use)
-export const markAllStagesCompleted = () => {
-  const storedUser = localStorage.getItem('user');
-  if (!storedUser) {
-    console.error('No user found in localStorage');
-    return;
-  }
-  
+export const markAllStagesCompleted = async () => {
   try {
-    const user = JSON.parse(storedUser);
-    const userId = user._id || user.id;
-    
-    if (!userId) {
-      console.error('No user ID found');
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('No authentication token found');
       return;
     }
     
-    const storageKey = `userProgress_${userId}`;
-    const currentProgress = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    const API_URL = getApiUrl();
+    
+    // First get current progress
+    const progressResponse = await fetch(`${API_URL}/api/user/progress`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    let currentProgress = {};
+    if (progressResponse.ok) {
+      const progressData = await progressResponse.json();
+      currentProgress = progressData.progress || {};
+    }
     
     // Mark all stages as completed
     currentProgress.allStagesCompleted = true;
@@ -393,8 +510,24 @@ export const markAllStagesCompleted = () => {
     ];
     currentProgress.completedAt = new Date().toISOString();
     
-    localStorage.setItem(storageKey, JSON.stringify(currentProgress));
-    console.log('Marked all stages as completed for user', userId);
+    // Save to database
+    const response = await fetch(`${API_URL}/api/user/update-progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        progressData: currentProgress
+      })
+    });
+    
+    if (response.ok) {
+      console.log('Marked all stages as completed');
+    } else {
+      console.error('Failed to mark all stages as completed');
+    }
+    
   } catch (error) {
     console.error('Error marking all stages as completed:', error);
   }
