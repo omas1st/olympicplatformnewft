@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   // Get the API URL from environment variables
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-  // Function to check if token is valid
+  // Function to check if token is valid WITHOUT auto-logout
   const checkToken = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
@@ -32,13 +32,14 @@ export const AuthProvider = ({ children }) => {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        timeout: 10000
+        timeout: 5000 // Reduced timeout to fail faster
       });
       
       return response.data && response.data.user;
     } catch (error) {
-      console.error('Token verification failed:', error);
-      // Don't logout immediately, just return false
+      console.log('Token verification failed (non-critical):', error.message);
+      // Don't logout, just return false
+      // This allows the user to stay logged in even if the server is temporarily down
       return false;
     }
   }, [API_URL]);
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     console.log('Updating user data:', userData);
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
-  }, []); // Empty dependency array because setUser is stable
+  }, []);
 
   // Initialize auth state from localStorage on app load
   useEffect(() => {
@@ -65,35 +66,44 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(storedUser);
             console.log('Parsed user data:', userData);
             
-            // Check if token is still valid
-            const isValidToken = await checkToken();
+            // Set user immediately from localStorage to prevent login redirects
+            setUser(userData);
+            setIsAuthenticated(true);
             
-            if (isValidToken) {
-              // Token is valid, set user
-              setUser(userData);
-              setIsAuthenticated(true);
-              console.log('Auth initialized successfully from localStorage');
-            } else {
-              console.log('Token is invalid, clearing auth data');
-              // Token is invalid, clear storage but don't redirect
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              setUser(null);
-              setIsAuthenticated(false);
-            }
+            // Then try to validate the token in the background
+            // Don't wait for this to complete - user can stay logged in even if server is down
+            checkToken().then(isValid => {
+              if (!isValid) {
+                console.log('Background token check failed, but keeping user logged in');
+                // We don't logout here to allow offline usage
+                // The next API call will fail and handle logout if needed
+              } else {
+                console.log('Background token check passed');
+              }
+            }).catch(error => {
+              console.error('Background token check error:', error);
+            });
+            
+            console.log('Auth initialized from localStorage');
           } catch (parseError) {
             console.error('Error parsing stored user:', parseError);
             localStorage.removeItem('user');
+            setUser(null);
+            setIsAuthenticated(false);
           }
         } else {
           console.log('No stored auth data found');
           // Clear any partial data
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          if (token && !storedUser) localStorage.removeItem('token');
+          if (!token && storedUser) localStorage.removeItem('user');
+          setUser(null);
+          setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
-        // Don't clear storage on initialization errors
+        // On initialization errors, keep user logged out
+        setUser(null);
+        setIsAuthenticated(false);
       } finally {
         setLoading(false);
         console.log('Auth initialization complete, loading:', false);
@@ -127,6 +137,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('No token found for refresh');
+        logout(); // Logout if no token
         return null;
       }
 
@@ -153,9 +164,16 @@ export const AuthProvider = ({ children }) => {
       return null;
     } catch (error) {
       console.error('Error refreshing user data:', error);
+      
+      // Only logout on 401 Unauthorized (invalid token)
+      if (error.response && error.response.status === 401) {
+        console.log('Token expired, logging out');
+        logout();
+      }
+      // For other errors (network, server down), keep user logged in
       return null;
     }
-  }, [API_URL, updateUser]); // Now updateUser is stable
+  }, [API_URL, updateUser, logout]);
 
   const value = {
     user,
