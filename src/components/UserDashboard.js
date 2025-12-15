@@ -16,7 +16,7 @@ const UserDashboard = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
   const navigate = useNavigate();
-  const { user, updateUser, logout } = useAuth();
+  const { user, updateUser, logout } = useAuth(); // Removed unused checkToken
 
   // Get the API URL from environment variables
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
@@ -143,7 +143,6 @@ const UserDashboard = () => {
       const token = localStorage.getItem('token');
       if (!token) {
         console.log('No authentication token found');
-        logout();
         throw new Error('No authentication token found');
       }
 
@@ -201,7 +200,7 @@ const UserDashboard = () => {
       
       throw error;
     }
-  }, [API_URL, updateUser, logout, navigate, clearRedirectUrl]); // Added clearRedirectUrl to dependencies
+  }, [API_URL, updateUser, navigate, clearRedirectUrl]);
 
   // Helper function to get the correct API endpoint
   const getApiEndpoint = (endpoint) => {
@@ -327,7 +326,15 @@ const UserDashboard = () => {
         setLoading(true);
         setError(null);
         
-        // Check API connection first
+        // Check if user has a valid token first
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found, redirecting to login');
+          navigate('/login');
+          return;
+        }
+
+        // Check API connection
         const isApiConnected = await testApiConnection();
         setApiStatus(isApiConnected ? 'connected' : 'disconnected');
         
@@ -337,14 +344,7 @@ const UserDashboard = () => {
           return;
         }
 
-        // Check if user exists in context
-        if (!user) {
-          console.log('No user in context, redirecting to login');
-          navigate('/login');
-          return;
-        }
-
-        console.log('Fetching dashboard data for user:', user._id);
+        console.log('Fetching dashboard data...');
         
         // Fetch user data - this will handle redirect if admin set one
         const userData = await fetchUserData();
@@ -353,10 +353,10 @@ const UserDashboard = () => {
           console.log('User data fetched successfully, fetching notifications');
           // Then fetch notifications
           await fetchNotifications(userData._id);
-        } else if (isMounted && user && user._id) {
-          console.log('Using existing user data, fetching notifications');
-          // Fallback to current user ID
-          await fetchNotifications(user._id);
+        } else if (isMounted && !userData) {
+          console.log('No user data found, redirecting to login');
+          navigate('/login');
+          return;
         }
 
         console.log('Dashboard data fetch completed successfully');
@@ -375,6 +375,7 @@ const UserDashboard = () => {
               case 401:
                 setError('Session expired. Please login again.');
                 logout();
+                navigate('/login');
                 break;
               case 404:
                 setError('Service endpoint not found. Please contact support.');
@@ -404,7 +405,7 @@ const UserDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [navigate, user, fetchUserData, fetchNotifications, logout, testApiConnection]);
+  }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user]); // Added 'user' back to dependencies
 
   const joinFacebookGroup = () => {
     window.open('https://www.facebook.com/groups/1460227851332998/?ref=share&mibextid=NSMWBT', '_blank');
