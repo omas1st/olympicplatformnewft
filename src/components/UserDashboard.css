@@ -575,3 +575,35 @@
 .cancel-deposit:hover {
   background: #7f8c8d;
 }
+
+/* Logout button styles */
+.logout-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.logout-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #d32f2f;
+}
+
+.logout-button:active {
+  background-color: #c62828;
+}
+
+/* Optional: Adjust welcome message position */
+.welcome-message {
+  margin-top: 10px;
+}

@@ -318,6 +318,19 @@ const UserDashboard = () => {
     }
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    // Call logout from auth context
+    logout();
+    
+    // Clear any localStorage items if needed
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Redirect to homepage
+    navigate('/');
+  };
+
   // Main data fetching effect
   useEffect(() => {
     let isMounted = true;
@@ -579,7 +592,7 @@ const UserDashboard = () => {
       {process.env.NODE_ENV === 'development' && (
         <div className="debug-bar">
           <small>
-            Debug: API: {API_URL} | Status: {apiStatus} | User ID: {user._id || 'N/A'}
+            Debug: API: {API_URL} | Status: {apiStatus} | User ID: {user.id || 'N/A'}
           </small>
         </div>
       )}
@@ -615,6 +628,13 @@ const UserDashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Logout Button */}
+      <div className="logout-section">
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
 
       <h1 className="welcome-message">Welcome, {user.name || 'User'}!</h1>
       
