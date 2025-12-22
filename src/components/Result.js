@@ -46,7 +46,7 @@ const Result = () => {
     }
   };
 
-  const LottoBalls = ({ numbers, isPowerball = false }) => (
+  const LottoBalls = ({ numbers, isPowerball = false, isLunchOrTea = false }) => (
     <div style={{ 
       display: 'flex', 
       justifyContent: 'center', 
@@ -54,26 +54,37 @@ const Result = () => {
       gap: '15px',
       margin: '20px 0'
     }}>
-      {numbers.map((num, index) => (
-        <div 
-          key={index} 
-          style={{
-            width: '60px',
-            height: '60px',
-            borderRadius: '50%',
-            backgroundColor: isPowerball && index === numbers.length - 1 ? '#e74c3c' : '#3498db',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            fontSize: '1.2rem',
-            fontWeight: 'bold',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-          }}
-        >
-          {num}
-        </div>
-      ))}
+      {numbers.map((num, index) => {
+        // Determine background color
+        let backgroundColor = '#3498db'; // Default blue
+        
+        if (isPowerball && index === numbers.length - 1) {
+          backgroundColor = '#e74c3c'; // Red for last powerball
+        } else if (isLunchOrTea && index === numbers.length - 1) {
+          backgroundColor = '#e74c3c'; // Red for last lunch/tea ball (7th ball)
+        }
+        
+        return (
+          <div 
+            key={index} 
+            style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              backgroundColor: backgroundColor,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            }}
+          >
+            {num}
+          </div>
+        );
+      })}
     </div>
   );
 
@@ -166,7 +177,7 @@ const Result = () => {
         }}>
           🍽️ Lunchtime Results
         </h2>
-        <LottoBalls numbers={results.lunchtime} />
+        <LottoBalls numbers={results.lunchtime} isLunchOrTea={true} />
       </div>
       
       <div style={{ 
@@ -185,7 +196,7 @@ const Result = () => {
         }}>
           ☕ Teatime Results
         </h2>
-        <LottoBalls numbers={results.teatime} />
+        <LottoBalls numbers={results.teatime} isLunchOrTea={true} />
       </div>
       
       <div style={{ 

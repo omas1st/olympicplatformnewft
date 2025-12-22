@@ -355,12 +355,12 @@ const HomePage = () => {
           <div className="draw-schedule-content">
             <div className="draw-schedule-column">
               <h3>UK 49's LUNCHTIME DRAW</h3>
-              <p>Closing : 13:45pm</p>
-              <p>Draw: 14:00pm</p>
+              <p>Closing : 14:30pm</p>
+              <p>Draw: 15:00pm</p>
               
               <h3>UK 49's TEATIME DRAW</h3>
-              <p>Closing: 18:45pm</p>
-              <p>Draw: 19:00pm</p>
+              <p>Closing: 19:30pm</p>
+              <p>Draw: 20:00pm</p>
               
               <h3>SA POWERBALL DRAW</h3>
               <p>Every Tuesday</p>
