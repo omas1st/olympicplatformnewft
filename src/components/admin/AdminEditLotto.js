@@ -1,14 +1,24 @@
 // src/components/admin/AdminEditLotto.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../../config/api';
 
-const AdminEditLotto = () => {
+const SECTIONS = [
+  { key: 'lunchtime', title: '🍽️ Lunchtime Winning Numbers', isSeparate: true },
+  { key: 'teatime', title: '☕ Teatime Winning Numbers', isSeparate: true },
+  { key: 'goslotto536', title: '🇷🇺 Russia Goslotto 5/36 (08:00 Draw)' },
+  { key: 'goslotto749', title: '🇷🇺 Russia Goslotto 7/49 (19:30 Draw)' },
+  { key: 'powerball', title: '🎱 Powerball Winning Numbers' }
+];
+
+const emptyQuad = () => ['00', '00', '00', '00'];
+
+export default function AdminEditLotto() {
   const [winningNumbers, setWinningNumbers] = useState({
-    lunchtime: ['00', '00', '00', '00'],
-    teatime: ['00', '00', '00', '00'],
-    goslotto536: ['00', '00', '00', '00'],
-    goslotto749: ['00', '00', '00', '00'],
-    powerball: ['00', '00', '00', '00']
+    lunchtime: emptyQuad(),
+    teatime: emptyQuad(),
+    goslotto536: emptyQuad(),
+    goslotto749: emptyQuad(),
+    powerball: emptyQuad()
   });
   const [originalNumbers, setOriginalNumbers] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,25 +28,25 @@ const AdminEditLotto = () => {
 
   useEffect(() => {
     fetchWinningNumbers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const normalizeArr = (arr) => {
+    if (!Array.isArray(arr)) return emptyQuad();
+    const sliced = arr.slice(0, 4);
+    while (sliced.length < 4) sliced.push('00');
+    return sliced.map(n => {
+      if (n === '' || n === null || typeof n === 'undefined') return '00';
+      const s = String(n).padStart(2, '0').slice(-2);
+      return s;
+    });
+  };
 
   const fetchWinningNumbers = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/winning-numbers');
-      const data = response.data || {};
-
-      const normalizeArr = (arr) => {
-        if (!Array.isArray(arr)) return ['00', '00', '00', '00'];
-        const sliced = arr.slice(0, 4);
-        while (sliced.length < 4) sliced.push('00');
-        return sliced.map(n => {
-          if (!n && n !== '') return '00';
-          const s = String(n).padStart(2, '0').slice(-2);
-          return s;
-        });
-      };
-
+      const res = await api.get('/admin/winning-numbers');
+      const data = res.data || {};
       const fetched = {
         lunchtime: normalizeArr(data.lunchtime),
         teatime: normalizeArr(data.teatime),
@@ -44,86 +54,78 @@ const AdminEditLotto = () => {
         goslotto749: normalizeArr(data.goslotto749),
         powerball: normalizeArr(data.powerball)
       };
-
       setWinningNumbers(fetched);
       setOriginalNumbers(fetched);
-    } catch (error) {
-      console.error('Error fetching winning numbers:', error);
-      alert('Failed to fetch winning numbers: ' + (error.response?.data?.message || error.message));
+    } catch (err) {
+      console.error('Error fetching winning numbers:', err);
+      alert('Failed to fetch winning numbers: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNumberChange = (section, index, value) => {
-    let numericValue = value.replace(/[^0-9]/g, '').slice(0, 2);
-    const updatedNumbers = [...winningNumbers[section]];
-    updatedNumbers[index] = numericValue === '' ? '' : numericValue;
-    
-    setWinningNumbers({
-      ...winningNumbers,
-      [section]: updatedNumbers
+  // update following the HomeBallsEditor editing pattern
+  const updateNumber = (section, idx, rawValue) => {
+    const numeric = String(rawValue).replace(/[^0-9]/g, '').slice(0, 2);
+    setWinningNumbers(prev => {
+      const clone = { ...prev };
+      clone[section] = [...(clone[section] || emptyQuad())];
+      clone[section][idx] = numeric === '' ? '' : numeric;
+      return clone;
     });
   };
 
-  const handleNumberBlur = (section, index, value) => {
-    let numericValue = String(value || '').replace(/[^0-9]/g, '');
-
-    if (!numericValue || numericValue === '') {
-      numericValue = '00';
-    } else if (numericValue.length === 1) {
-      numericValue = numericValue.padStart(2, '0');
-    } else if (numericValue.length > 2) {
-      numericValue = numericValue.slice(0, 2);
-    }
-
-    const updatedNumbers = [...winningNumbers[section]];
-    updatedNumbers[index] = numericValue;
-    
-    setWinningNumbers({
-      ...winningNumbers,
-      [section]: updatedNumbers
+  const handleBlurPad = (section, idx) => {
+    setWinningNumbers(prev => {
+      const clone = { ...prev };
+      clone[section] = [...(clone[section] || emptyQuad())];
+      let val = String(clone[section][idx] ?? '').replace(/[^0-9]/g, '');
+      if (!val) val = '00';
+      else if (val.length === 1) val = val.padStart(2, '0');
+      else val = val.slice(-2);
+      clone[section][idx] = val;
+      return clone;
     });
   };
 
-  const handleKeyDown = (e, section, index) => {
+  const handleKeyDown = (e, section, idx) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
       e.preventDefault();
-      const updatedNumbers = [...winningNumbers[section]];
-      updatedNumbers[index] = '';
-      setWinningNumbers({
-        ...winningNumbers,
-        [section]: updatedNumbers
+      setWinningNumbers(prev => {
+        const clone = { ...prev };
+        clone[section] = [...(clone[section] || emptyQuad())];
+        clone[section][idx] = '';
+        return clone;
       });
     }
   };
 
-  const handleFocus = (e) => {
-    e.target.select();
+  const validateAllNumbers = (numbersObj) => {
+    return Object.values(numbersObj).every(section =>
+      Array.isArray(section) &&
+      section.length === 4 &&
+      section.every(n => typeof n === 'string' && n.length === 2 && !isNaN(parseInt(n)))
+    );
   };
 
-  const validateAllNumbers = (numbersObj) => {
-    const allSections = Object.values(numbersObj);
-    const hasInvalidNumbers = allSections.some(section =>
-      section.some(num => !num || num.length !== 2 || isNaN(parseInt(num)))
-    );
-    return !hasInvalidNumbers;
+  const preparePayload = (state) => {
+    const payload = {};
+    Object.keys(state).forEach(section => {
+      payload[section] = (state[section] || emptyQuad()).map(n => {
+        if (!n || String(n).trim() === '') return '00';
+        return String(n).padStart(2, '0').slice(-2);
+      });
+    });
+    return payload;
   };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      const payload = {};
-      Object.keys(winningNumbers).forEach(section => {
-        payload[section] = winningNumbers[section].map(n => {
-          if (!n || String(n).trim() === '') return '00';
-          const s = String(n).padStart(2, '0').slice(-2);
-          return s;
-        });
-      });
+      const payload = preparePayload(winningNumbers);
 
       if (!validateAllNumbers(payload)) {
-        alert('Please make sure all numbers are valid 2-digit numbers (00-99)');
+        alert('Please ensure all numbers are valid 2-digit numbers (00-99).');
         return;
       }
 
@@ -131,34 +133,34 @@ const AdminEditLotto = () => {
       alert('Numbers saved successfully');
       setOriginalNumbers(payload);
       setWinningNumbers(payload);
-    } catch (error) {
-      console.error('Error saving numbers:', error);
-      alert('Failed to save numbers: ' + (error.response?.data?.message || error.message));
+    } catch (err) {
+      console.error('Error saving numbers:', err);
+      alert('Failed to save numbers: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
   };
 
-  const handleSaveSection = async (section) => {
+  const handleSaveSection = async (sectionKey) => {
     if (!originalNumbers) {
       return handleSave();
     }
 
     try {
-      setSavingSection(section);
+      setSavingSection(sectionKey);
       const payload = { ...originalNumbers };
-      payload[section] = winningNumbers[section].map(n => {
+      payload[sectionKey] = (winningNumbers[sectionKey] || emptyQuad()).map(n => {
         if (!n || String(n).trim() === '') return '00';
         return String(n).padStart(2, '0').slice(-2);
       });
 
       await api.post('/admin/winning-numbers', payload);
-      alert(`Section "${section}" updated successfully`);
+      alert(`Section "${sectionKey}" updated successfully`);
       setOriginalNumbers(payload);
       setWinningNumbers(payload);
-    } catch (error) {
-      console.error('Error saving section:', error);
-      alert('Failed to save section: ' + (error.response?.data?.message || error.message));
+    } catch (err) {
+      console.error('Error saving section:', err);
+      alert('Failed to save section: ' + (err.response?.data?.message || err.message));
     } finally {
       setSavingSection(null);
     }
@@ -167,10 +169,8 @@ const AdminEditLotto = () => {
   const handleMove = async () => {
     const today = new Date().toISOString().split('T')[0];
     const defaultDate = prompt('Enter date for past records (YYYY-MM-DD):', today);
-    
     if (!defaultDate) return;
-    
-    // Validate date format
+
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(defaultDate)) {
       alert('Please enter a valid date in YYYY-MM-DD format');
@@ -183,13 +183,10 @@ const AdminEditLotto = () => {
 
     try {
       setMoving(true);
-      
-      // First, get the current winning numbers to ensure we have the latest
       const response = await api.get('/admin/winning-numbers');
-      const currentData = response.data || {};
-      
-      // Create the past winning record
-      const moveResponse = await api.post('/admin/move-winning-numbers', { 
+      const currentData = response.data || winningNumbers;
+
+      await api.post('/admin/move-winning-numbers', {
         date: defaultDate,
         lotteryType: 'Daily Draw',
         lunchtime: currentData.lunchtime || winningNumbers.lunchtime,
@@ -198,135 +195,51 @@ const AdminEditLotto = () => {
         goslotto749: currentData.goslotto749 || winningNumbers.goslotto749,
         powerball: currentData.powerball || winningNumbers.powerball
       });
-      
-      alert(moveResponse.data?.message || 'Numbers moved to past records successfully');
-      
-      // Reset current numbers after moving
-      const resetNumbers = {
-        lunchtime: ['00', '00', '00', '00'],
-        teatime: ['00', '00', '00', '00'],
-        goslotto536: ['00', '00', '00', '00'],
-        goslotto749: ['00', '00', '00', '00'],
-        powerball: ['00', '00', '00', '00']
+
+      alert('Numbers moved to past records successfully');
+
+      const reset = {
+        lunchtime: emptyQuad(),
+        teatime: emptyQuad(),
+        goslotto536: emptyQuad(),
+        goslotto749: emptyQuad(),
+        powerball: emptyQuad()
       };
-      
-      // Save reset numbers
-      await api.post('/admin/winning-numbers', resetNumbers);
-      
-      // Update local state
-      setWinningNumbers(resetNumbers);
-      setOriginalNumbers(resetNumbers);
-      
-    } catch (error) {
-      console.error('Error moving numbers:', error);
-      alert('Failed to move numbers: ' + (error.response?.data?.message || error.message));
+
+      await api.post('/admin/winning-numbers', reset);
+      setWinningNumbers(reset);
+      setOriginalNumbers(reset);
+    } catch (err) {
+      console.error('Error moving numbers:', err);
+      alert('Failed to move numbers: ' + (err.response?.data?.message || err.message));
     } finally {
       setMoving(false);
     }
   };
 
   const handleReset = async () => {
-    if (window.confirm('Are you sure you want to reset all numbers to 00?')) {
-      const resetNumbers = {
-        lunchtime: ['00', '00', '00', '00'],
-        teatime: ['00', '00', '00', '00'],
-        goslotto536: ['00', '00', '00', '00'],
-        goslotto749: ['00', '00', '00', '00'],
-        powerball: ['00', '00', '00', '00']
-      };
-      
-      setWinningNumbers(resetNumbers);
-      
-      try {
-        await api.post('/admin/winning-numbers', resetNumbers);
-        setOriginalNumbers(resetNumbers);
-        alert('All numbers have been reset to 00 and saved');
-      } catch (error) {
-        console.error('Error saving reset numbers:', error);
-        alert('Numbers reset locally but failed to save: ' + (error.response?.data?.message || error.message));
-      }
+    if (!window.confirm('Are you sure you want to reset all numbers to 00?')) return;
+    const reset = {
+      lunchtime: emptyQuad(),
+      teatime: emptyQuad(),
+      goslotto536: emptyQuad(),
+      goslotto749: emptyQuad(),
+      powerball: emptyQuad()
+    };
+    setWinningNumbers(reset);
+    try {
+      await api.post('/admin/winning-numbers', reset);
+      setOriginalNumbers(reset);
+      alert('All numbers have been reset to 00 and saved');
+    } catch (err) {
+      console.error('Error saving reset numbers:', err);
+      alert('Numbers reset locally but failed to save: ' + (err.response?.data?.message || err.message));
     }
   };
 
-  const LottoBallInput = ({ section, index, value }) => {
-    const displayValue = value === '00' ? '00' : (value === '' ? '' : value);
-
-    return (
-      <input
-        type="text"
-        value={displayValue}
-        onChange={(e) => handleNumberChange(section, index, e.target.value)}
-        onBlur={(e) => handleNumberBlur(section, index, e.target.value)}
-        onKeyDown={(e) => handleKeyDown(e, section, index)}
-        onFocus={handleFocus}
-        placeholder="00"
-        style={{
-          width: '70px',
-          height: '70px',
-          borderRadius: '50%',
-          textAlign: 'center',
-          fontSize: '1.4rem',
-          margin: '0 8px',
-          border: '3px solid #3498db',
-          backgroundColor: value === '00' ? '#f8f9fa' : '#e8f4fd',
-          fontWeight: 'bold',
-          color: value === '00' ? '#999' : '#2c3e50',
-          transition: 'all 0.3s ease',
-          cursor: 'text'
-        }}
-        maxLength={2}
-        inputMode="numeric"
-      />
-    );
-  };
-
-  const LottoSection = ({ title, section, isSeparate = false }) => (
-    <div style={{ 
-      marginBottom: '30px', 
-      padding: '25px', 
-      border: '2px solid #bdc3c7',
-      borderRadius: '10px',
-      backgroundColor: 'white'
-    }}>
-      <h3 style={{ color: '#2c3e50', marginBottom: '20px' }}>{title}</h3>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0' }}>
-        {winningNumbers[section].slice(0, 3).map((num, index) => (
-          <LottoBallInput key={index} section={section} index={index} value={num} />
-        ))}
-        {isSeparate && (
-          <>
-            <div style={{ margin: '0 25px', fontSize: '2rem', color: '#e74c3c', fontWeight: 'bold' }}>+</div>
-            <LottoBallInput section={section} index={3} value={winningNumbers[section][3]} />
-          </>
-        )}
-        {!isSeparate && winningNumbers[section][3] !== undefined && (
-          <LottoBallInput section={section} index={3} value={winningNumbers[section][3]} />
-        )}
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '10px' }}>
-        <button
-          onClick={() => handleSaveSection(section)}
-          disabled={savingSection === section}
-          style={{
-            ...actionButtonStyle,
-            minWidth: '140px',
-            backgroundColor: savingSection === section ? '#95a5a6' : '#3498db'
-          }}
-        >
-          {savingSection === section ? 'Saving...' : `Update ${title.split(' ')[0]}`}
-        </button>
-      </div>
-
-      <div style={{ textAlign: 'center', color: '#7f8c8d', fontSize: '0.9rem' }}>
-        Click any circle and type 2 numbers (e.g., 12). Press Delete/Backspace to clear both numbers and type new ones.
-      </div>
-    </div>
-  );
-
   if (loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: 20, textAlign: 'center' }}>
         <h2>Edit Lotto Numbers</h2>
         <div>Loading winning numbers...</div>
       </div>
@@ -334,72 +247,157 @@ const AdminEditLotto = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="home-balls-editor" style={{ padding: 20 }}>
+      {/* component-level CSS injected here */}
+      <style>{`
+        .home-balls-editor { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+        .home-balls-editor h2 { color: #333; margin-bottom: 1rem; font-size: 1.6rem; text-align: center; }
+        section.editor-section { margin-bottom: 2rem; padding: 1.2rem; background-color: #f8f9fa; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+        section.editor-section h4 { color: #444; margin: 0 0 0.75rem 0; font-size: 1.1rem; text-align: center; }
+        section.editor-section h5 { color: #666; margin: 0.8rem 0; font-size: 1rem; text-align: center; }
+        .balls-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1.2rem; justify-content: center; align-items: center; margin-bottom: 1rem; }
+        .editor-ball { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+        /* Lotto ball - blue theme with white numbers when filled */
+        .lotto-ball { width: 70px; height: 70px; border-radius: 50%; display:flex; align-items:center; justify-content:center; font-size: 1.4rem; font-weight: 800; border: 3px solid #2b7fc6; box-shadow: 0 2px 6px rgba(0,0,0,0.06); transition: transform .15s ease, background-color .15s ease, color .15s ease; }
+        .lotto-ball.empty { background-color: #f8f9fa; color: #999; border-color: #cfe8ff; }
+        /* filled ball: solid blue background + white number */
+        .lotto-ball.filled { background-color: #2b7fc6; color: #ffffff; border-color: #245f94; }
+        .editor-ball input { width: 70px; padding: 0.4rem; text-align: center; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; transition: all 0.15s ease; }
+        .editor-ball input:focus { outline: none; border-color: #2b7fc6; box-shadow: 0 0 0 4px rgba(43,127,198,0.06); }
+        .action-row { display:flex; justify-content:center; gap:10px; margin-top:12px; }
+        .btn { color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 700; }
+        .btn.save { background-color: #27ae60; }
+        .btn.move { background-color: #3498db; }
+        .btn.reset { background-color: #e74c3c; }
+        .section-btn { background-color: #3498db; min-width: 140px; }
+        .section-btn.disabled { background-color: #95a5a6; cursor: default; }
+        @media (max-width: 768px) {
+          .balls-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.8rem; }
+          .lotto-ball, .editor-ball input { width: 60px; height: 60px; font-size: 1.1rem; }
+          .editor-ball input { width: 60px; }
+        }
+      `}</style>
+
       <h2>Edit Lotto Numbers</h2>
 
-      <div style={{ 
-        marginBottom: '20px', 
-        padding: '15px',
+      <div style={{
+        marginBottom: 20,
+        padding: 15,
         backgroundColor: '#fff3cd',
         border: '1px solid #ffeaa7',
-        borderRadius: '5px',
+        borderRadius: 5,
         color: '#856404'
       }}>
-        💡 <strong>Move to Past Records:</strong><br/>
-        • Current numbers will be saved to past records with the selected date<br/>
-        • Current numbers will be reset to "00" after moving<br/>
-        • Past records automatically disappear after 3 days<br/>
+        💡 <strong>Move to Past Records:</strong><br />
+        • Current numbers will be saved to past records with the selected date<br />
+        • Current numbers will be reset to "00" after moving<br />
+        • Past records automatically disappear after 3 days<br />
       </div>
 
-      <LottoSection title="🍽️ Lunchtime Winning Numbers" section="lunchtime" isSeparate={true} />
-      <LottoSection title="☕ Teatime Winning Numbers" section="teatime" isSeparate={true} />
-      <LottoSection title="🇷🇺 Russia Goslotto 5/36 (08:00 Draw)" section="goslotto536" />
-      <LottoSection title="🇷🇺 Russia Goslotto 7/49 (19:30 Draw)" section="goslotto749" />
-      <LottoSection title="🎱 Powerball Winning Numbers" section="powerball" />
+      {SECTIONS.map(sec => {
+        const arr = winningNumbers[sec.key] || emptyQuad();
+        return (
+          <section key={sec.key} className="editor-section" data-type={sec.key}>
+            <h4>{sec.title}</h4>
 
-      <div style={{ 
-        marginTop: '30px', 
-        padding: '20px',
-        backgroundColor: '#ecf0f1',
-        borderRadius: '10px',
-        textAlign: 'center'
-      }}>
-        <button 
-          style={{...actionButtonStyle, backgroundColor: '#27ae60'}} 
-          onClick={handleSave} 
+            <div className="balls-grid" style={{ justifyContent: 'center' }}>
+              {arr.slice(0, 3).map((n, i) => {
+                const display = (n === '' || typeof n === 'undefined') ? '00' : n;
+                const filled = display !== '00';
+                return (
+                  <div key={i} className="editor-ball">
+                    <div className={`lotto-ball ${filled ? 'filled' : 'empty'}`}>{display}</div>
+                    <input
+                      maxLength={2}
+                      value={n}
+                      onChange={e => updateNumber(sec.key, i, e.target.value)}
+                      onBlur={() => handleBlurPad(sec.key, i)}
+                      onKeyDown={e => handleKeyDown(e, sec.key, i)}
+                      placeholder="00"
+                      inputMode="numeric"
+                    />
+                  </div>
+                );
+              })}
+
+              {sec.isSeparate ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', fontSize: 28, margin: '0 18px', color: '#2b7fc6' }}>+</div>
+                  <div className="editor-ball">
+                    <div className={`lotto-ball ${arr[3] && arr[3] !== '00' ? 'filled' : 'empty'}`}>{arr[3] || '00'}</div>
+                    <input
+                      maxLength={2}
+                      value={arr[3]}
+                      onChange={e => updateNumber(sec.key, 3, e.target.value)}
+                      onBlur={() => handleBlurPad(sec.key, 3)}
+                      onKeyDown={e => handleKeyDown(e, sec.key, 3)}
+                      placeholder="00"
+                      inputMode="numeric"
+                    />
+                  </div>
+                </>
+              ) : (
+                arr[3] !== undefined && (
+                  <div className="editor-ball">
+                    <div className={`lotto-ball ${arr[3] && arr[3] !== '00' ? 'filled' : 'empty'}`}>{arr[3] || '00'}</div>
+                    <input
+                      maxLength={2}
+                      value={arr[3]}
+                      onChange={e => updateNumber(sec.key, 3, e.target.value)}
+                      onBlur={() => handleBlurPad(sec.key, 3)}
+                      onKeyDown={e => handleKeyDown(e, sec.key, 3)}
+                      placeholder="00"
+                      inputMode="numeric"
+                    />
+                  </div>
+                )
+              )}
+            </div>
+
+            <div className="action-row">
+              <button
+                onClick={() => handleSaveSection(sec.key)}
+                disabled={savingSection === sec.key}
+                className={`btn section-btn ${savingSection === sec.key ? 'disabled' : ''}`}
+                style={{ color: 'white' }}
+              >
+                {savingSection === sec.key ? 'Saving...' : `Update ${sec.title.split(' ')[0]}`}
+              </button>
+            </div>
+
+            <div style={{ textAlign: 'center', color: '#7f8c8d', fontSize: 13, marginTop: 8 }}>
+              Click any ball and type 2 numbers (e.g., 12). Press Delete/Backspace to clear and type new ones.
+            </div>
+          </section>
+        );
+      })}
+
+      <div style={{ textAlign: 'center', marginTop: 20 }}>
+        <button
+          onClick={handleSave}
           disabled={saving}
+          className="btn save"
+          style={{ marginRight: 12 }}
         >
           {saving ? 'Saving...' : '💾 Save Numbers'}
         </button>
-        <button 
-          style={{...actionButtonStyle, backgroundColor: '#3498db'}} 
+
+        <button
           onClick={handleMove}
           disabled={moving}
+          className="btn move"
+          style={{ marginRight: 12 }}
         >
           {moving ? 'Moving...' : '📤 Move to Past Records'}
         </button>
-        <button 
-          style={{...actionButtonStyle, backgroundColor: '#e74c3c'}} 
+
+        <button
           onClick={handleReset}
+          className="btn reset"
         >
           🗑️ Reset All to 00
         </button>
       </div>
     </div>
   );
-};
-
-const actionButtonStyle = {
-  color: 'white',
-  border: 'none',
-  padding: '12px 24px',
-  margin: '0 10px',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '1rem',
-  fontWeight: 'bold',
-  minWidth: '180px',
-  transition: 'all 0.3s ease'
-};
-
-export default AdminEditLotto;
+}

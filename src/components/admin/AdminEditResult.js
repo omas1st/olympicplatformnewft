@@ -1,14 +1,24 @@
 // src/components/admin/AdminEditResult.js
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../../config/api';
 
-const AdminEditResult = () => {
+const SECTIONS = [
+  { key: 'lunchtime', title: '🍽️ Lunchtime Results', count: 7 },
+  { key: 'teatime', title: '☕ Teatime Results', count: 7 },
+  { key: 'goslotto536', title: '🇷🇺 Goslotto 5/36 Results', count: 6 },
+  { key: 'goslotto749', title: '🇷🇺 Goslotto 7/49 Results', count: 6 },
+  { key: 'powerball', title: '🎱 Powerball Results', count: 6 }
+];
+
+const makeEmpty = (n) => Array.from({ length: n }, () => '');
+
+export default function AdminEditResult() {
   const [results, setResults] = useState({
-    lunchtime: ['', '', '', '', '', '', ''],
-    teatime: ['', '', '', '', '', '', ''],
-    goslotto536: ['', '', '', '', '', ''],
-    goslotto749: ['', '', '', '', '', ''],
-    powerball: ['', '', '', '', '', '']
+    lunchtime: makeEmpty(7),
+    teatime: makeEmpty(7),
+    goslotto536: makeEmpty(6),
+    goslotto749: makeEmpty(6),
+    powerball: makeEmpty(6)
   });
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -16,180 +26,163 @@ const AdminEditResult = () => {
 
   useEffect(() => {
     fetchResults();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const normalizeArr = (arr, len) => {
+    if (!Array.isArray(arr)) return makeEmpty(len);
+    const sliced = arr.slice(0, len);
+    while (sliced.length < len) sliced.push('');
+    return sliced.map(n => {
+      if (n === null || typeof n === 'undefined') return '';
+      return String(n);
+    });
+  };
 
   const fetchResults = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/results');
-      const data = response.data;
-      
-      console.log('Fetched admin results:', data); // Debug log
-      
-      setResults({
-        lunchtime: data.lunchtime?.slice(0, 7) || ['', '', '', '', '', '', ''],
-        teatime: data.teatime?.slice(0, 7) || ['', '', '', '', '', '', ''],
-        goslotto536: data.goslotto536?.slice(0, 6) || ['', '', '', '', '', ''],
-        goslotto749: data.goslotto749?.slice(0, 6) || ['', '', '', '', '', ''],
-        powerball: data.powerball?.slice(0, 6) || ['', '', '', '', '', '']
-      });
-    } catch (error) {
-      console.error('Error fetching results:', error);
-      alert('Failed to fetch results: ' + (error.response?.data?.message || error.message));
+      const res = await api.get('/admin/results');
+      const data = res.data || {};
+      // normalize lengths
+      const fetched = {
+        lunchtime: normalizeArr(data.lunchtime, 7),
+        teatime: normalizeArr(data.teatime, 7),
+        goslotto536: normalizeArr(data.goslotto536, 6),
+        goslotto749: normalizeArr(data.goslotto749, 6),
+        powerball: normalizeArr(data.powerball, 6)
+      };
+      setResults(fetched);
+      console.log('Fetched admin results:', fetched);
+    } catch (err) {
+      console.error('Error fetching results:', err);
+      alert('Failed to fetch results: ' + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNumberChange = (section, index, value) => {
-    const numericValue = value.replace(/[^0-9]/g, '').slice(0, 2);
-    
-    const updatedNumbers = [...results[section]];
-    updatedNumbers[index] = numericValue;
-    
-    setResults({
-      ...results,
-      [section]: updatedNumbers
+  // Update a single input following HomeBallsEditor pattern:
+  const updateNumber = (section, idx, rawValue) => {
+    const numeric = String(rawValue).replace(/[^0-9]/g, '').slice(0, 2);
+    setResults(prev => {
+      const clone = { ...prev };
+      clone[section] = [...(clone[section] || makeEmpty(SECTIONS.find(s => s.key === section).count))];
+      clone[section][idx] = numeric === '' ? '' : numeric;
+      return clone;
     });
+  };
+
+  // On blur, pad if there's a value, otherwise leave empty (so save validation can catch empties)
+  const handleBlurPad = (section, idx) => {
+    setResults(prev => {
+      const clone = { ...prev };
+      clone[section] = [...(clone[section] || makeEmpty(SECTIONS.find(s => s.key === section).count))];
+      let v = String(clone[section][idx] ?? '').replace(/[^0-9]/g, '');
+      if (!v) {
+        // keep empty
+        clone[section][idx] = '';
+      } else {
+        if (v.length === 1) v = v.padStart(2, '0');
+        else v = v.slice(-2);
+        clone[section][idx] = v;
+      }
+      return clone;
+    });
+  };
+
+  const handleKeyDown = (e, section, idx) => {
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      setResults(prev => {
+        const clone = { ...prev };
+        clone[section] = [...(clone[section] || makeEmpty(SECTIONS.find(s => s.key === section).count))];
+        clone[section][idx] = '';
+        return clone;
+      });
+    }
+  };
+
+  const validateAllFilled = (state) => {
+    return Object.values(state).every(arr => Array.isArray(arr) && arr.every(v => v !== '' && v !== null && typeof v !== 'undefined'));
+  };
+
+  const preparePayload = (state) => {
+    const payload = {};
+    Object.keys(state).forEach(section => {
+      payload[section] = (state[section] || []).map(n => {
+        const s = String(n || '').replace(/[^0-9]/g, '');
+        if (!s) return '00';
+        return s.padStart(2, '0').slice(-2);
+      });
+    });
+    return payload;
   };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      
-      const allSections = Object.values(results);
-      const isEmpty = allSections.some(section => 
-        section.some(num => !num || num === '')
-      );
-      
-      if (isEmpty) {
-        alert('Please fill in all results before saving');
+      if (!validateAllFilled(results)) {
+        alert('Please fill in all results before saving.');
         return;
       }
 
-      // Format numbers to ensure 2 digits
-      const formattedData = {
-        lunchtime: results.lunchtime.map(num => num.padStart(2, '0')),
-        teatime: results.teatime.map(num => num.padStart(2, '0')),
-        goslotto536: results.goslotto536.map(num => num.padStart(2, '0')),
-        goslotto749: results.goslotto749.map(num => num.padStart(2, '0')),
-        powerball: results.powerball.map(num => num.padStart(2, '0'))
-      };
-
-      console.log('Saving results:', formattedData); // Debug log
-      
-      await api.post('/admin/results', formattedData);
+      const formatted = preparePayload(results);
+      console.log('Saving results:', formatted);
+      await api.post('/admin/results', formatted);
       alert('Results saved successfully!');
-      
-      // Refresh data after saving
       fetchResults();
-    } catch (error) {
-      console.error('Error saving results:', error);
-      alert('Failed to save results: ' + (error.response?.data?.message || error.message));
+    } catch (err) {
+      console.error('Error saving results:', err);
+      alert('Failed to save results: ' + (err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }
   };
 
   const handleReset = async () => {
-    if (!window.confirm('Are you sure you want to reset ALL results to "00"? This action cannot be undone.')) {
-      return;
-    }
-
+    if (!window.confirm('Are you sure you want to reset ALL results to "00"? This action cannot be undone.')) return;
     try {
       setResetting(true);
-      
-      // Create reset data with all "00" values
       const resetData = {
-        lunchtime: ['00', '00', '00', '00', '00', '00', '00'],
-        teatime: ['00', '00', '00', '00', '00', '00', '00'],
-        goslotto536: ['00', '00', '00', '00', '00', '00'],
-        goslotto749: ['00', '00', '00', '00', '00', '00'],
-        powerball: ['00', '00', '00', '00', '00', '00']
+        lunchtime: Array.from({ length: 7 }, () => '00'),
+        teatime: Array.from({ length: 7 }, () => '00'),
+        goslotto536: Array.from({ length: 6 }, () => '00'),
+        goslotto749: Array.from({ length: 6 }, () => '00'),
+        powerball: Array.from({ length: 6 }, () => '00')
       };
-
-      console.log('Resetting results to:', resetData); // Debug log
-      
-      // Send reset data to backend
+      console.log('Resetting results to:', resetData);
       await api.post('/admin/results', resetData);
       alert('All results have been reset to "00" and saved successfully!');
-      
-      // Update local state to show "00"
       setResults({
-        lunchtime: ['00', '00', '00', '00', '00', '00', '00'],
-        teatime: ['00', '00', '00', '00', '00', '00', '00'],
-        goslotto536: ['00', '00', '00', '00', '00', '00'],
-        goslotto749: ['00', '00', '00', '00', '00', '00'],
-        powerball: ['00', '00', '00', '00', '00', '00']
+        lunchtime: resetData.lunchtime,
+        teatime: resetData.teatime,
+        goslotto536: resetData.goslotto536,
+        goslotto749: resetData.goslotto749,
+        powerball: resetData.powerball
       });
-      
-    } catch (error) {
-      console.error('Error resetting results:', error);
-      alert('Failed to reset results: ' + (error.response?.data?.message || error.message));
+    } catch (err) {
+      console.error('Error resetting results:', err);
+      alert('Failed to reset results: ' + (err.response?.data?.message || err.message));
     } finally {
       setResetting(false);
     }
   };
 
   const handleClear = () => {
-    if (window.confirm('Are you sure you want to clear all results to empty? This will only clear the form, not save to database.')) {
-      setResults({
-        lunchtime: ['', '', '', '', '', '', ''],
-        teatime: ['', '', '', '', '', '', ''],
-        goslotto536: ['', '', '', '', '', ''],
-        goslotto749: ['', '', '', '', '', ''],
-        powerball: ['', '', '', '', '', '']
-      });
-    }
+    if (!window.confirm('Are you sure you want to clear all results to empty? This will only clear the form, not save to database.')) return;
+    setResults({
+      lunchtime: makeEmpty(7),
+      teatime: makeEmpty(7),
+      goslotto536: makeEmpty(6),
+      goslotto749: makeEmpty(6),
+      powerball: makeEmpty(6)
+    });
   };
-
-  const ResultSection = ({ title, section, ballCount }) => (
-    <div style={{ 
-      marginBottom: '30px', 
-      padding: '25px', 
-      border: '2px solid #bdc3c7',
-      borderRadius: '10px',
-      backgroundColor: 'white'
-    }}>
-      <h3 style={{ color: '#2c3e50', marginBottom: '20px' }}>{title}</h3>
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '20px 0', flexWrap: 'wrap' }}>
-        {results[section].map((num, index) => (
-          <input
-            key={index}
-            type="text"
-            value={num}
-            onChange={(e) => handleNumberChange(section, index, e.target.value)}
-            onBlur={(e) => {
-              const value = e.target.value;
-              if (value && !value.includes('00')) {
-                const padded = value.padStart(2, '0');
-                handleNumberChange(section, index, padded);
-              }
-            }}
-            placeholder="00"
-            style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              textAlign: 'center',
-              fontSize: '1.2rem',
-              margin: '8px',
-              border: '3px solid #9b59b6',
-              backgroundColor: num === '00' ? '#e8f4fd' : '#f8f9fa',
-              fontWeight: 'bold',
-              color: num === '00' ? '#666' : '#000'
-            }}
-            maxLength={2}
-            inputMode="numeric"
-          />
-        ))}
-      </div>
-    </div>
-  );
 
   if (loading) {
     return (
-      <div style={{ padding: '20px', textAlign: 'center' }}>
+      <div style={{ padding: 20, textAlign: 'center' }}>
         <h2>Edit Results</h2>
         <div>Loading results...</div>
       </div>
@@ -197,78 +190,92 @@ const AdminEditResult = () => {
   }
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Edit Results</h2>
+    <div style={{ padding: 20, fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial' }}>
+      {/* component-level CSS */}
+      <style>{`
+        .editor-wrapper { max-width: 1100px; margin: 1.5rem auto; }
+        .note { margin-bottom: 12px; padding: 12px; background:#fff3cd; border:1px solid #ffeaa7; border-radius:6px; color:#856404; }
+        .section-card { margin-bottom: 22px; padding:18px; border-radius:10px; background:#fff; border:1px solid #e0e0e0; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .section-title { color:#2c3e50; margin-bottom:12px; text-align:center; font-size:1.05rem; }
+        .balls-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; align-items:center; }
+        .editor-ball { display:flex; flex-direction:column; align-items:center; gap:8px; }
+        .lotto-ball { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:800; border:3px solid #9b59b6; background:#f8f9fa; color:#666; transition: all .12s ease; }
+        .lotto-ball.filled { background:#e8f4fd; color:#112; border-color:#9b59b6; }
+        .editor-ball input { width:64px; height:42px; padding:6px; text-align:center; border-radius:8px; border:1px solid #ddd; font-size:1rem; }
+        .editor-ball input:focus { outline: none; border-color: #9b59b6; box-shadow: 0 0 0 4px rgba(155,89,182,0.06); }
+        .actions { display:flex; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap; }
+        .btn { padding:10px 18px; border-radius:8px; border:none; color:white; font-weight:700; cursor:pointer; }
+        .btn.save { background:#27ae60; }
+        .btn.reset { background:#f39c12; }
+        .btn.clear { background:#e74c3c; }
+        .btn.refresh { background:#3498db; }
+        @media (max-width: 700px) {
+          .lotto-ball { width:56px; height:56px; font-size:1rem; }
+          .editor-ball input { width:56px; height:40px; }
+        }
+      `}</style>
 
-      <div style={{ 
-        marginBottom: '20px', 
-        padding: '15px',
-        backgroundColor: '#fff3cd',
-        border: '1px solid #ffeaa7',
-        borderRadius: '5px',
-        color: '#856404'
-      }}>
-        💡 <strong>Reset Function:</strong><br/>
-        • <strong>Reset All to "00"</strong> - Resets all results to "00" and saves to database<br/>
-        • <strong>Clear Form</strong> - Only clears the form fields locally without saving<br/>
-      </div>
+      <div className="editor-wrapper">
+        <h2 style={{ textAlign: 'center', marginBottom: 12 }}>Edit Results</h2>
 
-      <ResultSection title="🍽️ Lunchtime Results" section="lunchtime" ballCount={7} />
-      <ResultSection title="☕ Teatime Results" section="teatime" ballCount={7} />
-      <ResultSection title="🇷🇺 07:45 Goslotto 5/36 Draw Results" section="goslotto536" ballCount={6} />
-      <ResultSection title="🇷🇺 07:45 Goslotto 7/49 Draw Results" section="goslotto749" ballCount={6} />
-      <ResultSection title="🎱 Powerball Draw Results" section="powerball" ballCount={6} />
+        <div className="note">
+          💡 <strong>Reset Function:</strong><br />
+          • <strong>Reset All to "00"</strong> - Resets all results to "00" and saves to database<br />
+          • <strong>Clear Form</strong> - Only clears the form fields locally without saving
+        </div>
 
-      <div style={{ 
-        marginTop: '30px', 
-        padding: '20px',
-        backgroundColor: '#ecf0f1',
-        borderRadius: '10px',
-        textAlign: 'center'
-      }}>
-        <button style={{...actionButtonStyle, backgroundColor: '#27ae60'}} onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : '💾 Save Results'}
-        </button>
-        <button 
-          style={{...actionButtonStyle, backgroundColor: '#f39c12'}} 
-          onClick={handleReset} 
-          disabled={resetting}
-        >
-          {resetting ? 'Resetting...' : '🔄 Reset All to "00"'}
-        </button>
-        <button style={{...actionButtonStyle, backgroundColor: '#e74c3c'}} onClick={handleClear}>
-          🗑️ Clear Form
-        </button>
-        <button style={{...actionButtonStyle, backgroundColor: '#3498db'}} onClick={fetchResults}>
-          🔄 Refresh Data
-        </button>
-      </div>
-      
-      <div style={{ 
-        marginTop: '20px', 
-        padding: '10px',
-        textAlign: 'center',
-        color: '#7f8c8d',
-        fontSize: '0.9rem'
-      }}>
-        <strong>Note:</strong> "Reset All to '00'" will save the reset state to database and update the public results page.
+        {SECTIONS.map(sec => {
+          const arr = results[sec.key] || makeEmpty(sec.count);
+          return (
+            <div key={sec.key} className="section-card" data-type={sec.key}>
+              <div className="section-title">{sec.title}</div>
+
+              <div className="balls-grid">
+                {arr.map((val, idx) => {
+                  const display = (val === '' || typeof val === 'undefined') ? '00' : (String(val).padStart(2, '0'));
+                  const filled = val !== '' && val !== '00';
+                  return (
+                    <div key={idx} className="editor-ball">
+                      <div className={`lotto-ball ${filled ? 'filled' : ''}`}>{display}</div>
+                      <input
+                        maxLength={2}
+                        value={val}
+                        onChange={e => updateNumber(sec.key, idx, e.target.value)}
+                        onBlur={() => handleBlurPad(sec.key, idx)}
+                        onKeyDown={e => handleKeyDown(e, sec.key, idx)}
+                        placeholder="00"
+                        inputMode="numeric"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+
+        <div className="actions" style={{ marginTop: 10 }}>
+          <button className="btn save" onClick={handleSave} disabled={saving} style={{ opacity: saving ? 0.8 : 1 }}>
+            {saving ? 'Saving...' : '💾 Save Results'}
+          </button>
+
+          <button className="btn reset" onClick={handleReset} disabled={resetting} style={{ opacity: resetting ? 0.8 : 1 }}>
+            {resetting ? 'Resetting...' : '🔄 Reset All to "00"'}
+          </button>
+
+          <button className="btn clear" onClick={handleClear}>
+            🗑️ Clear Form
+          </button>
+
+          <button className="btn refresh" onClick={fetchResults}>
+            🔄 Refresh Data
+          </button>
+        </div>
+
+        <div style={{ marginTop: 14, textAlign: 'center', color: '#7f8c8d', fontSize: 13 }}>
+          <strong>Note:</strong> "Reset All to '00'" will save the reset state to database and update the public results page.
+        </div>
       </div>
     </div>
   );
-};
-
-const actionButtonStyle = {
-  color: 'white',
-  border: 'none',
-  padding: '12px 24px',
-  margin: '0 10px',
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontSize: '1rem',
-  fontWeight: 'bold',
-  minWidth: '180px',
-  transition: 'all 0.3s ease',
-  marginBottom: '10px'
-};
-
-export default AdminEditResult;
+}
