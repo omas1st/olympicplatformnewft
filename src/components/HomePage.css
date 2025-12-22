@@ -142,7 +142,6 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30px 30px, #ff6b6b, #c1121f);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,9 +152,18 @@
   border: 2px solid white;
 }
 
+/* Blue balls for first 3 numbers */
+.lotto-ball.blue-ball {
+  background: radial-gradient(circle at 30px 30px, #3498db, #1a5276);
+}
+
+/* Red ball for 4th number */
+.lotto-ball.red-ball {
+  background: radial-gradient(circle at 30px 30px, #e74c3c, #c0392b);
+}
+
 .lotto-ball.separate {
   margin-left: 30px;
-  background: radial-gradient(circle at 30px 30px, #4ecdc4, #1a535c);
 }
 
 .status-text {

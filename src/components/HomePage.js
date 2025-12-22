@@ -75,12 +75,17 @@ const HomePage = () => {
   const LottoBalls = ({ numbers, isSeparate = false }) => (
     <div className="lotto-balls">
       {numbers.slice(0, 3).map((num, index) => (
-        <div key={index} className="lotto-ball">
+        <div key={index} className="lotto-ball blue-ball">
           {num}
         </div>
       ))}
       {isSeparate && (
-        <div className="lotto-ball separate">
+        <div className="lotto-ball red-ball separate">
+          {numbers[3]}
+        </div>
+      )}
+      {!isSeparate && numbers[3] && (
+        <div className="lotto-ball red-ball">
           {numbers[3]}
         </div>
       )}
