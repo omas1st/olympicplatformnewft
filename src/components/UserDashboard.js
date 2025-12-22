@@ -683,6 +683,23 @@ const UserDashboard = () => {
               </div>
               
               <div className="modal-body">
+                {/* NEW: Minimum payment note shown above amount input */}
+                <div
+                  className="min-payment-note"
+                  style={{
+                    marginBottom: '12px',
+                    padding: '12px',
+                    backgroundColor: '#fff3cd',
+                    border: '1px solid #ffeaa7',
+                    borderRadius: '6px',
+                    color: '#856404',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  <strong>Minimum payment:</strong> Bank transfer: <strong>R300</strong>. Cryptocurrency: <strong>$20</strong>.
+                  If you deposit below these amounts, your payment won't be processed.
+                </div>
+
                 <div className="form-group">
                   <label>Deposit Amount (ZAR)</label>
                   <input
