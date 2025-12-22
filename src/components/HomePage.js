@@ -72,19 +72,19 @@ const HomePage = () => {
     }
   };
 
-  const LottoBalls = ({ numbers, isSeparate = false }) => (
+  const LottoBalls = ({ numbers, isSeparate = false, showFourthBall = true }) => (
     <div className="lotto-balls">
       {numbers.slice(0, 3).map((num, index) => (
         <div key={index} className="lotto-ball blue-ball">
           {num}
         </div>
       ))}
-      {isSeparate && (
+      {showFourthBall && isSeparate && (
         <div className="lotto-ball red-ball separate">
           {numbers[3]}
         </div>
       )}
-      {!isSeparate && numbers[3] && (
+      {showFourthBall && !isSeparate && numbers[3] && (
         <div className="lotto-ball red-ball">
           {numbers[3]}
         </div>
@@ -179,7 +179,7 @@ const HomePage = () => {
         >
           <h2 className="section-title">RUSSIA GOSLOTTO 5/36 WINNING NUMBER</h2>
           <p className="draw-time">For 08:00 Draw</p>
-          <LottoBalls numbers={winningNumbers.goslotto536} />
+          <LottoBalls numbers={winningNumbers.goslotto536} showFourthBall={false} />
           <StatusText numbers={winningNumbers.goslotto536} />
         </section>
 
@@ -189,7 +189,7 @@ const HomePage = () => {
         >
           <h2 className="section-title">RUSSIA GOSLOTTO 7/49 WINNING NUMBER</h2>
           <p className="draw-time">For 19:30 Draw</p>
-          <LottoBalls numbers={winningNumbers.goslotto749} />
+          <LottoBalls numbers={winningNumbers.goslotto749} showFourthBall={false} />
           <StatusText numbers={winningNumbers.goslotto749} />
         </section>
 
@@ -199,7 +199,7 @@ const HomePage = () => {
           style={{ backgroundImage: `url(${lottoBg})` }}
         >
           <h2 className="section-title">Powerball Winning Numbers</h2>
-          <LottoBalls numbers={winningNumbers.powerball} />
+          <LottoBalls numbers={winningNumbers.powerball} showFourthBall={false} />
           <StatusText numbers={winningNumbers.powerball} />
         </section>
 

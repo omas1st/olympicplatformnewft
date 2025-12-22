@@ -166,6 +166,18 @@
   margin-left: 30px;
 }
 
+/* Hide 4th ball for Goslotto and Powerball sections */
+.goslotto-section .lotto-ball.red-ball,
+.powerball-section .lotto-ball.red-ball {
+  display: none !important;
+}
+
+/* Adjust spacing for goslotto and powerball sections when 4th ball is hidden */
+.goslotto-section .lotto-balls,
+.powerball-section .lotto-balls {
+  gap: 30px; /* Increase gap to fill the space left by hidden ball */
+}
+
 .status-text {
   text-align: center;
   font-size: 1.2rem;
