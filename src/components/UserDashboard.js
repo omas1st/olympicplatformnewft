@@ -422,7 +422,7 @@ const UserDashboard = () => {
   }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user]);
 
   const joinFacebookGroup = () => {
-    window.open('https://www.facebook.com/groups/1460227851332998/?ref=share&mibextid=NSMWBT', '_blank');
+    window.open('https://facebook.com/groups/1054242656910015/', '_blank');
   };
 
   // Updated handleUnlockAccess function with better error handling
