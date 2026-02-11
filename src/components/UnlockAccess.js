@@ -153,7 +153,7 @@ const UnlockAccess = () => {
             <li>
               After funding your wallet, send a message on WhatsApp to the Admin/Agent at:
               <br />
-              <strong>+1 405 926 0437</strong>
+              <strong>+1 229 753 9618</strong>
               <br />
               <strong>+44 739 887 1333</strong>
             </li>
