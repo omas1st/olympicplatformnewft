@@ -14,7 +14,7 @@ const ApprovalStampPage = () => {
   const [stampGenerated, setStampGenerated] = useState(false);
 
   const stampPrice = 2000;
-  const adminWhatsappUrl = "https://wa.me/14059260437";
+  const adminWhatsappUrl = "https://wa.me/12297539618";
 
   useEffect(() => {
     // Update progress tracking when page loads
