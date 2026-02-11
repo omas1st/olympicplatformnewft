@@ -3,7 +3,7 @@ import './About.css';
 
 const About = () => {
   const openWhatsApp = () => {
-    window.open('https://wa.me/14059260437', '_blank');
+    window.open('https://wa.me/12297539618', '_blank');
   };
 
   return (
