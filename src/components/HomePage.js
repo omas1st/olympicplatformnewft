@@ -99,7 +99,7 @@ const HomePage = () => {
   );
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/14059260437', '_blank');
+    window.open('https://wa.me/12297539618', '_blank');
   };
 
   const openWhatsAppRK = () => {
@@ -314,7 +314,7 @@ const HomePage = () => {
               Noted, the Platform Membership ID Card works for the Platform Group Only. 
               So, if you want to receive the accurate booming Numbers Via your Email or directly 
               to your Whatsapp number you don't have to get the Platform Membership ID Card. 
-              Kindly Whatsapp the agent now +1 405 926 0437 to get full information on how to 
+              Kindly Whatsapp the agent now +1 229 753 9618 to get full information on how to 
               apply for the Platform Membership ID to get added to the Platform Group.
             </p>
           </div>
@@ -349,7 +349,7 @@ const HomePage = () => {
           />
           <div className="id-card-content">
             <p className="id-card-description">
-              This is the platform whatsapp booming group profile. kindly chat up the agent now +14059260437 to get full information on how to get added to the platform group.
+              This is the platform whatsapp booming group profile. kindly chat up the agent now +12297539618 to get full information on how to get added to the platform group.
             </p>
           </div>
         </section>
