@@ -75,7 +75,7 @@ const Tips = () => {
             to stand a chance to <strong>WIN R30,000 upwards</strong> on Lunchtime and Teatime game everyday. 
             Trust me winning is 100% sure and guaranteed on our platform, you have nothing to worry or scared about. 
             You're safe with our platform and easy to register with our platform. Kindly, click on the <strong>REGISTRATION PAGE</strong> on the platform page and registered 
-            or WhatsApp contact an agent <strong>+1 405 926 0437</strong>.
+            or WhatsApp contact an agent <strong>+1 229 753 9618</strong>.
           </p>
         </section>
 
@@ -127,7 +127,7 @@ const Tips = () => {
             You have to <strong>REGISTER with our Platform (OLYMPIC WINNING PLATFORM)</strong> to start winning bigger everyday for you to be among the winner's everyday, 
             to stand a chance to <strong>WIN R30,000 upwards</strong> on each Draw. Trust me winning is 100% sure and guaranteed on our platform, you have nothing to worry or scared about. 
             You're safe with our platform and easy to register with our platform. Kindly, click on the <strong>REGISTRATION PAGE</strong> on the platform page and registered 
-            or WhatsApp contact an agent <strong>+1 405 926 0437</strong>.
+            or WhatsApp contact an agent <strong>+1 229 753 9618</strong>.
           </p>
         </section>
 
@@ -191,7 +191,7 @@ const Tips = () => {
             You have to <strong>REGISTER with our Platform (OLYMPIC WINNING PLATFORM)</strong> to start winning bigger everyday for you to be among the winner's everyday, 
             to stand a chance to <strong>WIN R30,000 upwards</strong> on each Draw. Trust me winning is 100% sure and guaranteed on our platform, you have nothing to worry or scared about. 
             You're safe with our platform and easy to register with our platform. Kindly, click on the <strong>REGISTRATION PAGE</strong> on the platform page and registered 
-            or WhatsApp contact an agent <strong>+1 405 926 0437</strong>.
+            or WhatsApp contact an agent <strong>+1 229 753 9618</strong>.
           </p>
         </section>
 
@@ -202,7 +202,7 @@ const Tips = () => {
             <strong>GMAIL CONTACT:</strong> olympicwinningplatform@gmail.com
           </p>
           <p style={{ margin: '10px 0' }}>
-            <strong>WHATSAPP:</strong> +1 405 926 0437
+            <strong>WHATSAPP:</strong> +1 229 753 9618
           </p>
         </section>
       </div>
