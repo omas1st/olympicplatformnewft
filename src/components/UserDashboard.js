@@ -475,7 +475,7 @@ const UserDashboard = () => {
   };
 
   const handleSendWhatsAppMessage = () => {
-    window.open('https://wa.me/447398871333', '_blank');
+    window.open('https://wa.me/447413669213', '_blank');
   };
 
   const handleRefresh = async () => {
@@ -575,7 +575,7 @@ const UserDashboard = () => {
   const bankingDetails = {
     beneficiaryName: 'MAMA PTY',
     accountNumber: '62509963139',
-    reference: '0651623286',
+    reference: '0657350788',
     bank: 'FNB',
     branchCode: '250655',
     paymentType: 'Immediate Payment'
