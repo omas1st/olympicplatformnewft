@@ -26,10 +26,10 @@ const Login = () => {
   const [forgotSuccess, setForgotSuccess] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  // For the final message before redirect
+  // Final message shown before redirect
   const [finalMessage, setFinalMessage] = useState('');
   const [finalMessageType, setFinalMessageType] = useState(''); // 'success' or 'error'
-  const [redirectPath, setRedirectPath] = useState(null);
+  const [redirectPath, setRedirectPath] = useState(null); // where to go after OK
 
   // --- Login handlers (unchanged) ---
   const handleChange = (e) => {
@@ -90,7 +90,7 @@ const Login = () => {
     setShowForgotModal(false);
   };
 
-  // Step 1: request reset code
+  // Step 1: Request reset code
   const handleForgotEmailSubmit = async (e) => {
     e.preventDefault();
     if (!forgotEmail) return;
@@ -107,21 +107,23 @@ const Login = () => {
       setForgotStep('reset');
     } catch (err) {
       const msg = err.response?.data?.message || 'Request failed';
-      setForgotError(msg);
 
-      // If user not found, show final message with OK button -> register page
+      // Email not registered -> show final message, OK -> register page
       if (err.response?.status === 404 && err.response?.data?.redirect === '/register') {
         setFinalMessage('Email not found. Please register first.');
         setFinalMessageType('error');
         setRedirectPath('/register');
         setForgotStep('message');
+      } else {
+        // Other errors (network, server) remain on this step
+        setForgotError(msg);
       }
     } finally {
       setForgotLoading(false);
     }
   };
 
-  // Step 2: verify code and set new password
+  // Step 2: Verify code & set new password
   const handleResetSubmit = async (e) => {
     e.preventDefault();
     if (!resetCode || !newPassword || !confirmPassword) {
@@ -148,7 +150,7 @@ const Login = () => {
         newPassword
       });
 
-      // Success – show message, OK button -> login page
+      // Success -> show final message, OK -> login page
       setFinalMessage('Password reset successfully!');
       setFinalMessageType('success');
       setRedirectPath('/');
@@ -156,14 +158,14 @@ const Login = () => {
     } catch (err) {
       const msg = err.response?.data?.message || 'Reset failed';
 
-      // If code invalid/expired, show message, OK button -> login page
+      // Invalid or expired code -> show final message, OK -> login page
       if (msg.includes('Invalid reset code') || msg.includes('expired')) {
-        setFinalMessage('Incorrect code. Please try again.');
+        setFinalMessage('Incorrect code. Please try again later.');
         setFinalMessageType('error');
         setRedirectPath('/');
         setForgotStep('message');
       } else {
-        // Other errors stay on reset step
+        // Other errors (validation, server) stay on this step
         setForgotError(msg);
       }
     } finally {
@@ -171,13 +173,11 @@ const Login = () => {
     }
   };
 
-  // Final OK button handler – redirect if path set, otherwise close modal
+  // User clicks OK on the final message -> redirect to saved path, then close modal
   const handleFinalOk = () => {
+    closeForgotModal();
     if (redirectPath) {
-      closeForgotModal();
       navigate(redirectPath);
-    } else {
-      closeForgotModal();
     }
   };
 
@@ -246,6 +246,7 @@ const Login = () => {
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <span className="modal-close" onClick={closeForgotModal}>&times;</span>
 
+            {/* Step 1: Enter email */}
             {forgotStep === 'email' && (
               <>
                 <h3>Reset Your Password</h3>
@@ -276,6 +277,7 @@ const Login = () => {
               </>
             )}
 
+            {/* Step 2: Enter code & new password */}
             {forgotStep === 'reset' && (
               <>
                 <h3>Reset Your Password</h3>
@@ -332,6 +334,7 @@ const Login = () => {
               </>
             )}
 
+            {/* Step 3: Final message + OK button */}
             {forgotStep === 'message' && (
               <>
                 <h3>{finalMessageType === 'success' ? 'Success' : 'Notice'}</h3>
