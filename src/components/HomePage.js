@@ -103,7 +103,7 @@ const HomePage = () => {
   };
 
   const openWhatsAppRK = () => {
-    window.open('https://wa.me/447413669213', '_blank');
+    window.open('https://wa.me/14722684641', '_blank');
   };
 
   // public image paths
@@ -225,7 +225,7 @@ const HomePage = () => {
           <h3>For any help or questions?</h3>
           <p className="help-contact">
             <strong>WhatsApp Message R.K Colin:</strong> 
-            <span className="whatsapp-link" onClick={openWhatsAppRK}> +44 7413669213</span>
+            <span className="whatsapp-link" onClick={openWhatsAppRK}> +1 472 268 4641</span>
           </p>
           
         </section>
