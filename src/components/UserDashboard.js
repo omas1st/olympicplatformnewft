@@ -475,7 +475,7 @@ const UserDashboard = () => {
   };
 
   const handleSendWhatsAppMessage = () => {
-    window.open('https://wa.me/447413669213', '_blank');
+    window.open('https://wa.me/12297539618', '_blank');
   };
 
   const handleRefresh = async () => {
