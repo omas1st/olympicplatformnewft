@@ -12,7 +12,7 @@ const PAGE_ORDER = {
 };
 
 // WhatsApp URL for completed users
-const WHATSAPP_URL = 'https://wa.me/14059260437';
+const WHATSAPP_URL = 'https://wa.me/12297539618';
 
 // Helper function to get API URL
 const getApiUrl = () => {
