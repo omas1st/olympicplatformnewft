@@ -23,6 +23,11 @@ const UpgradePage = () => {
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [difference, setDifference] = useState(0);
 
+  // Track that the user has visited this page (sets it as highest page visited)
+  useEffect(() => {
+    updateProgressTracking('upgrade-page');
+  }, []);
+
   // Old plan prices (same as Subpage)
   const oldPlanPrices = {
     '1 Day - (3 numbers + bonus lunchtime only) - R700': 700,
