@@ -1,5 +1,41 @@
+// src/components/admin/AdminUserInfo.js
 import React, { useState, useEffect } from 'react';
 import api from '../../config/api';
+
+// ===== Plan Price Map (old + new) =====
+const planPriceMap = {
+  // Old plans
+  '1 Day - (3 numbers + bonus lunchtime only) - R700': 700,
+  '1 Day - (3 numbers + bonus teatime only) - R700': 700,
+  '1 Day - (4 numbers + bonus - Powerball) - R1000': 1000,
+  '3 Days - (3 numbers + bonus lunchtime) - R2000': 2000,
+  '3 Days - (3 numbers + bonus teatime) - R2000': 2000,
+  '7 Days - (3 numbers + bonus lunchtime) - R4500': 4500,
+  '7 Days - (3 numbers + bonus teatime) - R4500': 4500,
+  '4 numbers (Russian Goslotto) - R700': 700,
+  '7 days lunchtime and teatime - R2000': 2000,
+  // New upgrade plans
+  'Weekly Plans - (3 numbers + bonus lunchtime only) - R4500': 4500,
+  'Weekly Plans - (3 numbers + bonus teatime only) - R4500': 4500,
+  'VIP Monthly Plans - Lunchtime and Teatime - R36,000': 36000,
+};
+
+// ===== All plan options for admin dropdown (old + new) =====
+const planOptions = [
+  '1 Day - (3 numbers + bonus lunchtime only) - R700',
+  '1 Day - (3 numbers + bonus teatime only) - R700',
+  '1 Day - (4 numbers + bonus - Powerball) - R1000',
+  '3 Days - (3 numbers + bonus lunchtime) - R2000',
+  '3 Days - (3 numbers + bonus teatime) - R2000',
+  '7 Days - (3 numbers + bonus lunchtime) - R4500',
+  '7 Days - (3 numbers + bonus teatime) - R4500',
+  '4 numbers (Russian Goslotto) - R700',
+  '7 days lunchtime and teatime - R2000',
+  // New upgrade plans
+  'Weekly Plans - (3 numbers + bonus lunchtime only) - R4500',
+  'Weekly Plans - (3 numbers + bonus teatime only) - R4500',
+  'VIP Monthly Plans - Lunchtime and Teatime - R36,000',
+];
 
 const AdminUserInfo = () => {
   const [users, setUsers] = useState([]);
@@ -178,18 +214,6 @@ const AdminUserInfo = () => {
     );
   });
 
-  const planOptions = [
-    '1 Day - (3 numbers + bonus lunchtime only) - R700',
-    '1 Day - (3 numbers + bonus teatime only) - R700',
-    '1 Day - (4 numbers + bonus - Powerball) - R1000',
-    '3 Days - (3 numbers + bonus lunchtime) - R2000',
-    '3 Days - (3 numbers + bonus teatime) - R2000',
-    '7 Days - (3 numbers + bonus lunchtime) - R4500',
-    '7 Days - (3 numbers + bonus teatime) - R4500',
-    '4 numbers (Russian Goslotto) - R700',
-    '7 days lunchtime and teatime - R2000'
-  ];
-
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -201,6 +225,14 @@ const AdminUserInfo = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Helper to check if plan is one of the new upgrade plans
+  const isUpgradePlan = (plan) => {
+    return plan && (
+      plan.includes('Weekly Plans') || 
+      plan.includes('VIP Monthly Plans')
+    );
   };
 
   return (
@@ -371,6 +403,7 @@ const AdminUserInfo = () => {
                   <th style={tableHeaderStyle}>Status</th>
                   <th style={tableHeaderStyle}>Balance (ZAR)</th>
                   <th style={tableHeaderStyle}>Current Plan</th>
+                  <th style={tableHeaderStyle}>Plan Price (R)</th>
                   <th style={tableHeaderStyle}>Actions</th>
                 </tr>
               </thead>
@@ -421,9 +454,21 @@ const AdminUserInfo = () => {
                           fontSize: '0.85rem'
                         }}>
                           {user.plans[0]}
+                          {isUpgradePlan(user.plans[0]) && (
+                            <span style={{ marginLeft: '6px', backgroundColor: '#27ae60', color: 'white', padding: '2px 6px', borderRadius: '10px', fontSize: '0.75rem' }}>
+                              UPGRADED
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <span style={{ color: '#999', fontStyle: 'italic' }}>No plan</span>
+                      )}
+                    </td>
+                    <td style={tableCellStyle}>
+                      {user.plans && user.plans.length > 0 && planPriceMap[user.plans[0]] ? (
+                        <strong>R {planPriceMap[user.plans[0]].toFixed(2)}</strong>
+                      ) : (
+                        <span style={{ color: '#999' }}>N/A</span>
                       )}
                     </td>
                     <td style={{...tableCellStyle, minWidth: '250px'}}>
@@ -464,7 +509,7 @@ const AdminUserInfo = () => {
                           >
                             <option value="">Select Plan</option>
                             {planOptions.map((plan, index) => (
-                              <option key={index} value={plan}>{plan}</option>
+                              <option key={index} value={plan}>{plan} (R{planPriceMap[plan]})</option>
                             ))}
                           </select>
                         </div>
