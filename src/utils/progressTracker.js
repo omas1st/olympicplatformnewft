@@ -8,7 +8,8 @@ const PAGE_ORDER = {
   'card-page': 4,
   'card-number-page': 5,
   'card-signature-page': 6,
-  'approval-stamp-page': 7
+  'approval-stamp-page': 7,
+  'upgrade-page': 8 // NEW STAGE
 };
 
 // WhatsApp URL for completed users
@@ -90,8 +91,9 @@ export const updateProgressTracking = async (pageName, stepCompleted = false) =>
         currentProgress.completedSteps.push(pageName);
       }
       
-      // Move to next page after completion
-      if (currentPageOrder < 7) {
+      // Move to next page after completion (except for the last page)
+      const totalPages = Object.keys(PAGE_ORDER).length; // now 8
+      if (currentPageOrder < totalPages) {
         const nextPage = Object.keys(PAGE_ORDER).find(
           key => PAGE_ORDER[key] === currentPageOrder + 1
         );
@@ -102,10 +104,10 @@ export const updateProgressTracking = async (pageName, stepCompleted = false) =>
       }
       
       // Check if all stages are completed
-      if (currentProgress.completedSteps && currentProgress.completedSteps.length >= 7) {
+      if (currentProgress.completedSteps && currentProgress.completedSteps.length >= totalPages) {
         currentProgress.allStagesCompleted = true;
         currentProgress.completedAt = new Date().toISOString();
-        console.log('All 7 stages completed!');
+        console.log(`All ${totalPages} stages completed!`);
       }
     }
     
@@ -180,7 +182,7 @@ export const getNextPageToContinue = async () => {
         const progress = data.progress || {};
         console.log('Progress from database:', progress);
         
-        // Map page names to routes
+        // Map page names to routes (updated)
         const pageToRouteMap = {
           'unlock-access': '/unlock-access',
           'vip-membership': '/vip-membership',
@@ -188,7 +190,8 @@ export const getNextPageToContinue = async () => {
           'card-page': '/card-page',
           'card-number-page': '/card-number-page',
           'card-signature-page': '/card-signature-page',
-          'approval-stamp-page': '/approval-stamp-page'
+          'approval-stamp-page': '/approval-stamp-page',
+          'upgrade-page': '/upgrade-page'
         };
         
         // Check if all stages completed
@@ -220,8 +223,6 @@ export const getNextPageToContinue = async () => {
         
         if (storedProgress) {
           const progress = JSON.parse(storedProgress);
-          console.log('Progress from localStorage:', progress);
-          
           const pageToRouteMap = {
             'unlock-access': '/unlock-access',
             'vip-membership': '/vip-membership',
@@ -229,7 +230,8 @@ export const getNextPageToContinue = async () => {
             'card-page': '/card-page',
             'card-number-page': '/card-number-page',
             'card-signature-page': '/card-signature-page',
-            'approval-stamp-page': '/approval-stamp-page'
+            'approval-stamp-page': '/approval-stamp-page',
+            'upgrade-page': '/upgrade-page'
           };
           
           if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
@@ -272,7 +274,8 @@ export const getNextPageToContinueSync = () => {
         'card-page': '/card-page',
         'card-number-page': '/card-number-page',
         'card-signature-page': '/card-signature-page',
-        'approval-stamp-page': '/approval-stamp-page'
+        'approval-stamp-page': '/approval-stamp-page',
+        'upgrade-page': '/upgrade-page'
       };
       
       if (progress.highestPageVisited && pageToRouteMap[progress.highestPageVisited]) {
@@ -316,8 +319,8 @@ export const hasCompletedAllStages = async () => {
       return true;
     }
     
-    // Alternative check: count completed steps
-    if (progress.completedSteps && progress.completedSteps.length >= 7) {
+    // Alternative check: count completed steps (now 8)
+    if (progress.completedSteps && progress.completedSteps.length >= Object.keys(PAGE_ORDER).length) {
       return true;
     }
     
@@ -471,7 +474,7 @@ export const setHighestPageVisited = async (pageName) => {
   }
 };
 
-// Function to mark all stages as completed (for testing or admin use)
+// Function to mark all stages as completed (for testing or admin use) - UPDATED for 8 stages
 export const markAllStagesCompleted = async () => {
   try {
     const token = localStorage.getItem('token');
@@ -498,7 +501,7 @@ export const markAllStagesCompleted = async () => {
     
     // Mark all stages as completed
     currentProgress.allStagesCompleted = true;
-    currentProgress.highestPageVisited = 'approval-stamp-page';
+    currentProgress.highestPageVisited = 'upgrade-page'; // final stage
     currentProgress.completedSteps = [
       'unlock-access',
       'vip-membership',
@@ -506,7 +509,8 @@ export const markAllStagesCompleted = async () => {
       'card-page',
       'card-number-page',
       'card-signature-page',
-      'approval-stamp-page'
+      'approval-stamp-page',
+      'upgrade-page'
     ];
     currentProgress.completedAt = new Date().toISOString();
     
@@ -523,7 +527,7 @@ export const markAllStagesCompleted = async () => {
     });
     
     if (response.ok) {
-      console.log('Marked all stages as completed');
+      console.log('Marked all 8 stages as completed');
     } else {
       console.error('Failed to mark all stages as completed');
     }

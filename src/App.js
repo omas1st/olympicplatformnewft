@@ -18,6 +18,7 @@ import CardPage from './components/CardPage';
 import CardNumberPage from './components/CardNumberPage';
 import CardSignaturePage from './components/CardSignaturePage';
 import ApprovalStampPage from './components/ApprovalStampPage';
+import UpgradePage from './components/UpgradePage'; // NEW IMPORT
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
@@ -38,7 +39,8 @@ const ProgressCheckWrapper = ({ children }) => {
       const currentPath = location.pathname.replace('/', '');
       const protectedPages = [
         'vip-membership', 'subpage', 'card-page', 
-        'card-number-page', 'card-signature-page', 'approval-stamp-page'
+        'card-number-page', 'card-signature-page', 'approval-stamp-page',
+        'upgrade-page' // ADDED
       ];
       
       // If user is accessing a protected page, check their progress
@@ -58,7 +60,7 @@ const ProgressCheckWrapper = ({ children }) => {
             const data = await response.json();
             const progress = data.progress || {};
             
-            // Define page hierarchy
+            // Define page hierarchy (updated)
             const PAGE_ORDER = {
               'unlock-access': 1,
               'vip-membership': 2,
@@ -66,7 +68,8 @@ const ProgressCheckWrapper = ({ children }) => {
               'card-page': 4,
               'card-number-page': 5,
               'card-signature-page': 6,
-              'approval-stamp-page': 7
+              'approval-stamp-page': 7,
+              'upgrade-page': 8
             };
             
             const currentPageOrder = PAGE_ORDER[currentPath] || 1;
@@ -82,7 +85,8 @@ const ProgressCheckWrapper = ({ children }) => {
                 'card-page': '/card-page',
                 'card-number-page': '/card-number-page',
                 'card-signature-page': '/card-signature-page',
-                'approval-stamp-page': '/approval-stamp-page'
+                'approval-stamp-page': '/approval-stamp-page',
+                'upgrade-page': '/upgrade-page'
               };
               
               const redirectTo = pageToRouteMap[progress.highestPageVisited] || '/unlock-access';
@@ -137,6 +141,7 @@ function App() {
               <Route path="/card-number-page" element={<CardNumberPage />} />
               <Route path="/card-signature-page" element={<CardSignaturePage />} />
               <Route path="/approval-stamp-page" element={<ApprovalStampPage />} />
+              <Route path="/upgrade-page" element={<UpgradePage />} />
               {/* Add a catch-all route for undefined paths */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

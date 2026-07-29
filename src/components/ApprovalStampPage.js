@@ -14,10 +14,8 @@ const ApprovalStampPage = () => {
   const [stampGenerated, setStampGenerated] = useState(false);
 
   const stampPrice = 2000;
-  const adminWhatsappUrl = "https://wa.me/12297539618";
 
   useEffect(() => {
-    // Update progress tracking when page loads
     const updateProgress = async () => {
       await updateProgressTracking('approval-stamp-page');
     };
@@ -49,11 +47,9 @@ const ApprovalStampPage = () => {
       );
 
       if (response.data.success) {
-        setError(''); // Clear any previous errors
+        setError('');
         setStampGenerated(true);
         updateUser(response.data.user);
-        
-        // Update progress tracking
         await updateProgressTracking('approval-stamp-page', true);
       } else {
         setError(response.data.message || 'Failed to generate approval stamp');
@@ -66,17 +62,10 @@ const ApprovalStampPage = () => {
     }
   };
 
+  // UPDATED: Redirect to upgrade page instead of WhatsApp
   const handleProceed = async () => {
-    // Update progress tracking before navigating
     await updateProgressTracking('approval-stamp-page', true);
-    
-    // Open WhatsApp in a new tab
-    window.open(adminWhatsappUrl, '_blank');
-    
-    // Also navigate to dashboard after a short delay
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 1000);
+    navigate('/upgrade-page');
   };
 
   return (
@@ -139,20 +128,14 @@ const ApprovalStampPage = () => {
 
                 <div className="proceed-section">
                   <div className="whatsapp-redirect-info">
-                    <h4>Next Step: Get Your Original ID Card</h4>
-                    <p>
-                      You will now be redirected to chat with the admin on WhatsApp to receive your original ID card.
-                    </p>
-                    <p className="whatsapp-note">
-                      <strong>Note:</strong> Click "Proceed" to open WhatsApp and message the admin to get your original ID card.
-                    </p>
+                    
                   </div>
                   
                   <button
-                    className="cta-button proceed-button whatsapp-button"
+                    className="cta-button proceed-button"
                     onClick={handleProceed}
                   >
-                    <span className="whatsapp-icon">📱</span> Proceed to WhatsApp Chat
+                    Proceed
                   </button>
                 </div>
               </div>
