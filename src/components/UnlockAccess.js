@@ -155,7 +155,7 @@ const UnlockAccess = () => {
               <br />
               <strong>+1 472 268 4641</strong>
               <br />
-              <strong>+1 617 616 0716</strong>
+              <strong>+1 860 797 6957</strong>
             </li>
             
           </ol>
@@ -195,7 +195,7 @@ const UnlockAccess = () => {
             </div>
           )}
           <div className="contact-admin">
-            Don't have a PIN or having issues? <a href="https://wa.me/16176160716" target="_blank" rel="noopener noreferrer">
+            Don't have a PIN or having issues? <a href="https://wa.me/18607976957" target="_blank" rel="noopener noreferrer">
               Contact Admin on WhatsApp
             </a> for assistance.
           </div>
