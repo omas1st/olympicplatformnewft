@@ -122,7 +122,7 @@ const UpgradePage = () => {
 
   const finalizeUpgrade = async () => {
     await updateProgressTracking('upgrade-page', true);
-    window.open('https://wa.me/18607976957', '_blank');
+    window.open('https://wa.me/14722684641', '_blank');
     setTimeout(() => navigate('/dashboard'), 1500);
   };
 
