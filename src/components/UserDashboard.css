@@ -607,3 +607,115 @@
 .welcome-message {
   margin-top: 10px;
 }
+
+/* Existing styles ... (kept as is) */
+
+/* ========== NEW STYLES FOR LOTTO BALLS AND WINNING NUMBERS CARD ========== */
+
+/* Full-width card for winning numbers */
+.lotto-results-card {
+  grid-column: 1 / -1; /* span all columns */
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  padding: 25px;
+}
+
+.lotto-results-card h3 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  text-align: center;
+  font-size: 1.5em;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 15px;
+}
+
+.lotto-draws-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.lotto-draw-item {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.lotto-draw-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.lotto-draw-item h4 {
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+/* Lotto balls container */
+.lotto-balls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* Individual lotto ball */
+.lotto-ball {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+/* Blue balls (first three) */
+.blue-ball {
+  background: radial-gradient(circle at 30% 30%, #6ab0ff, #1e6fd9);
+}
+
+/* Red ball (fourth or special) */
+.red-ball {
+  background: radial-gradient(circle at 30% 30%, #ff8a80, #d32f2f);
+}
+
+/* Separate ball (fourth ball with spacing on left) */
+.lotto-ball.separate {
+  margin-left: 10px;
+}
+
+/* Status text */
+.status-text {
+  font-size: 0.85em;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .lotto-draws-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .lotto-draws-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .lotto-ball {
+    width: 40px;
+    height: 40px;
+    font-size: 1em;
+  }
+}

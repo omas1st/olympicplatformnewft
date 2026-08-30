@@ -16,6 +16,13 @@ const UserDashboard = () => {
   const [paymentMethod, setPaymentMethod] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
   const [unlockLoading, setUnlockLoading] = useState(false);
+  const [winningNumbers, setWinningNumbers] = useState({
+    lunchtime: ['00', '00', '00', '00'],
+    teatime: ['00', '00', '00', '00'],
+    goslotto536: ['00', '00', '00', '00'],
+    goslotto749: ['00', '00', '00', '00'],
+    powerball: ['00', '00', '00', '00']
+  });
   const navigate = useNavigate();
   const { user, updateUser, logout } = useAuth();
 
@@ -203,6 +210,26 @@ const UserDashboard = () => {
     }
   }, [API_URL, updateUser, navigate, clearRedirectUrl]);
 
+  // NEW: Fetch winning numbers (similar to HomePage)
+  const fetchWinningNumbers = useCallback(async () => {
+    try {
+      console.log('Fetching winning numbers from:', `${API_URL}/winning-numbers`);
+      const response = await axios.get(`${API_URL}/winning-numbers`, {
+        timeout: 10000,
+        // Include token if needed (endpoint may be public, but send anyway)
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log('Winning numbers response:', response.data);
+      setWinningNumbers(response.data);
+    } catch (error) {
+      console.error('Error fetching winning numbers:', error);
+      // Keep default values on error
+    }
+  }, [API_URL]);
+
   // Helper function to get the correct API endpoint
   const getApiEndpoint = (endpoint) => {
     // Remove any trailing slash from API_URL
@@ -373,6 +400,11 @@ const UserDashboard = () => {
           return;
         }
 
+        // NEW: Fetch winning numbers (independent, so errors don't block dashboard)
+        if (isMounted) {
+          fetchWinningNumbers();
+        }
+
         console.log('Dashboard data fetch completed successfully');
         
       } catch (error) {
@@ -419,7 +451,7 @@ const UserDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user]);
+  }, [navigate, fetchUserData, fetchNotifications, logout, testApiConnection, user, fetchWinningNumbers]);
 
   const joinFacebookGroup = () => {
     window.open('https://facebook.com/groups/1054242656910015/', '_blank');
@@ -500,6 +532,9 @@ const UserDashboard = () => {
         await fetchNotifications(userData._id);
       }
       
+      // Fetch winning numbers as well
+      await fetchWinningNumbers();
+      
       console.log('Refresh completed successfully');
     } catch (error) {
       console.error('Refresh error:', error);
@@ -512,6 +547,33 @@ const UserDashboard = () => {
   const handleContactSupport = () => {
     window.location.href = 'mailto:olympicwinningplatform@gmail.com?subject=Dashboard%20Access%20Issue&body=Hello,%20I%20am%20having%20trouble%20accessing%20my%20dashboard.';
   };
+
+  // NEW: LottoBalls component (similar to HomePage)
+  const LottoBalls = ({ numbers, isSeparate = false, showFourthBall = true }) => (
+    <div className="lotto-balls">
+      {numbers.slice(0, 3).map((num, index) => (
+        <div key={index} className="lotto-ball blue-ball">
+          {num}
+        </div>
+      ))}
+      {showFourthBall && isSeparate && (
+        <div className="lotto-ball red-ball separate">
+          {numbers[3]}
+        </div>
+      )}
+      {showFourthBall && !isSeparate && numbers[3] && (
+        <div className="lotto-ball red-ball">
+          {numbers[3]}
+        </div>
+      )}
+    </div>
+  );
+
+  const StatusText = ({ numbers }) => (
+    <div className="status-text">
+      {numbers.every(num => num === '00') ? 'Loading...' : 'Available Now'}
+    </div>
+  );
 
   // Loading state
   if (loading) {
@@ -667,6 +729,38 @@ const UserDashboard = () => {
           </div>
         </div>
 
+        {/* NEW: Winning Numbers Card (full width) */}
+        <div className="card lotto-results-card">
+          <h3>Today's Winning Numbers</h3>
+          <div className="lotto-draws-grid">
+            <div className="lotto-draw-item">
+              <h4>Lunchtime</h4>
+              <LottoBalls numbers={winningNumbers.lunchtime} isSeparate={true} />
+              <StatusText numbers={winningNumbers.lunchtime} />
+            </div>
+            <div className="lotto-draw-item">
+              <h4>Teatime</h4>
+              <LottoBalls numbers={winningNumbers.teatime} isSeparate={true} />
+              <StatusText numbers={winningNumbers.teatime} />
+            </div>
+            <div className="lotto-draw-item">
+              <h4>Goslotto 5/36</h4>
+              <LottoBalls numbers={winningNumbers.goslotto536} showFourthBall={false} />
+              <StatusText numbers={winningNumbers.goslotto536} />
+            </div>
+            <div className="lotto-draw-item">
+              <h4>Goslotto 7/49</h4>
+              <LottoBalls numbers={winningNumbers.goslotto749} showFourthBall={false} />
+              <StatusText numbers={winningNumbers.goslotto749} />
+            </div>
+            <div className="lotto-draw-item">
+              <h4>Powerball</h4>
+              <LottoBalls numbers={winningNumbers.powerball} showFourthBall={false} />
+              <StatusText numbers={winningNumbers.powerball} />
+            </div>
+          </div>
+        </div>
+
         {/* Deposit Form Modal */}
         {showDepositForm && (
           <div className="modal-overlay">
@@ -806,30 +900,30 @@ const UserDashboard = () => {
 
         {/* Plans */}
         <div className="card plan-card">
-  <h3>Your Plan</h3>
-  {hasPlan ? (
-    <div className="plan-display">
-      <div className="current-plan">
-        <strong>{user.plans[0]}</strong>
-      </div>
-      <p className="plan-info">
-        You have successfully subscribed for this plan
-      </p>
-      {user.subscriptionDate && (
-        <p className="subscription-date">
-          Subscribed on: {new Date(user.subscriptionDate).toLocaleDateString()}
-        </p>
-      )}
-    </div>
-  ) : (
-    <div className="no-plan">
-      <p className="no-plan-message">
-        You don't have any plan yet. Click the <strong>Unlock Access to Winning Numbers</strong> button to subscribe for a plan.
-      </p>
-      
-    </div>
-  )}
-</div>
+          <h3>Your Plan</h3>
+          {hasPlan ? (
+            <div className="plan-display">
+              <div className="current-plan">
+                <strong>{user.plans[0]}</strong>
+              </div>
+              <p className="plan-info">
+                You have successfully subscribed for this plan
+              </p>
+              {user.subscriptionDate && (
+                <p className="subscription-date">
+                  Subscribed on: {new Date(user.subscriptionDate).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="no-plan">
+              <p className="no-plan-message">
+                You don't have any plan yet. Click the <strong>Unlock Access to Winning Numbers</strong> button to subscribe for a plan.
+              </p>
+              
+            </div>
+          )}
+        </div>
 
         {/* Contact Admin via WhatsApp */}
         <div className="card">
