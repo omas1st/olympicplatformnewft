@@ -729,7 +729,27 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        {/* NEW: Winning Numbers Card (full width) */}
+        {/* Unlock Access Button - MOVED ABOVE WINNING NUMBERS */}
+        <div className="card unlock-access-card">
+          <h3>Unlock Access</h3>
+          <p className="unlock-description">
+            Click below to unlock access to winning numbers and VIP content
+          </p>
+          <button 
+            className="unlock-access-button"
+            onClick={handleUnlockAccess}
+            disabled={unlockLoading}
+          >
+            {unlockLoading ? 'Loading...' : 'Unlock Access to Winning Numbers'}
+          </button>
+          {unlockLoading && (
+            <div className="loading-indicator-small">
+              <small>Checking your progress...</small>
+            </div>
+          )}
+        </div>
+
+        {/* Winning Numbers Card (full width) */}
         <div className="card lotto-results-card">
           <h3>Today's Winning Numbers</h3>
           <div className="lotto-draws-grid">
@@ -777,7 +797,7 @@ const UserDashboard = () => {
               </div>
               
               <div className="modal-body">
-                {/* NEW: Minimum payment note shown above amount input */}
+                {/* Minimum payment note shown above amount input */}
                 <div
                   className="min-payment-note"
                   style={{
@@ -877,26 +897,6 @@ const UserDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Unlock Access Button */}
-        <div className="card unlock-access-card">
-          <h3>Unlock Access</h3>
-          <p className="unlock-description">
-            Click below to unlock access to winning numbers and VIP content
-          </p>
-          <button 
-            className="unlock-access-button"
-            onClick={handleUnlockAccess}
-            disabled={unlockLoading}
-          >
-            {unlockLoading ? 'Loading...' : 'Unlock Access to Winning Numbers'}
-          </button>
-          {unlockLoading && (
-            <div className="loading-indicator-small">
-              <small>Checking your progress...</small>
-            </div>
-          )}
-        </div>
 
         {/* Plans */}
         <div className="card plan-card">
