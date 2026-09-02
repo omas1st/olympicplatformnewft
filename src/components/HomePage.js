@@ -99,11 +99,11 @@ const HomePage = () => {
   );
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/447402240715', '_blank');
+    window.open('https://wa.me/27782433019', '_blank');
   };
 
   const openWhatsAppRK = () => {
-    window.open('https://wa.me/447402240715', '_blank');
+    window.open('https://wa.me/27782433019', '_blank');
   };
 
   // public image paths
@@ -225,7 +225,7 @@ const HomePage = () => {
           <h3>For any help or questions?</h3>
           <p className="help-contact">
             <strong>WhatsApp Message R.K Colin:</strong> 
-            <span className="whatsapp-link" onClick={openWhatsAppRK}> +44 740 2240715</span>
+            <span className="whatsapp-link" onClick={openWhatsAppRK}> +27 78 243 3019</span>
           </p>
           
         </section>
@@ -314,7 +314,7 @@ const HomePage = () => {
               Noted, the Platform Membership ID Card works for the Platform Group Only. 
               So, if you want to receive the accurate booming Numbers Via your Email or directly 
               to your Whatsapp number you don't have to get the Platform Membership ID Card. 
-              Kindly Whatsapp the agent now +44 740 2240715 to get full information on how to 
+              Kindly Whatsapp the agent now +27 78 243 3019 to get full information on how to 
               apply for the Platform Membership ID to get added to the Platform Group.
             </p>
           </div>
@@ -349,7 +349,7 @@ const HomePage = () => {
           />
           <div className="id-card-content">
             <p className="id-card-description">
-              This is the platform whatsapp booming group profile. kindly chat up the agent now +44 740 2240715 to get full information on how to get added to the platform group.
+              This is the platform whatsapp booming group profile. kindly chat up the agent now +27 78 243 3019 to get full information on how to get added to the platform group.
             </p>
           </div>
         </section>
