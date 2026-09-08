@@ -225,7 +225,7 @@ const HomePage = () => {
           <h3>For any help or questions?</h3>
           <p className="help-contact">
             <strong>WhatsApp Message R.K Colin:</strong> 
-            <span className="whatsapp-link" onClick={openWhatsAppRK}> +27 78 243 3019</span>
+            <span className="whatsapp-link" onClick={openWhatsAppRK}> +27 62 121 0919</span>
           </p>
           
         </section>
