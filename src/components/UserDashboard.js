@@ -637,7 +637,7 @@ const UserDashboard = () => {
   const bankingDetails = {
     beneficiaryName: 'MAMA PTY',
     accountNumber: '62509963139',
-    reference: '0657350788',
+    reference: '0651623286',
     bank: 'FNB',
     branchCode: '250655',
     paymentType: 'Immediate Payment'
