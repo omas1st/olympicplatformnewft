@@ -195,7 +195,7 @@ const UnlockAccess = () => {
             </div>
           )}
           <div className="contact-admin">
-            Don't have a PIN or having issues? <a href="https://wa.me/27782433019" target="_blank" rel="noopener noreferrer">
+            Don't have a PIN or having issues? <a href="https://wa.me/27603038557" target="_blank" rel="noopener noreferrer">
               Contact Admin on WhatsApp
             </a> for assistance.
           </div>
