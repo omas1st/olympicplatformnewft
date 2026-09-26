@@ -155,7 +155,7 @@ const UnlockAccess = () => {
               <br />
               <strong>+27 60 303 8557</strong>
               <br />
-              <strong>+27 78 243 3019</strong>
+              <strong>+27 83 329 8291</strong>
             </li>
             
           </ol>
