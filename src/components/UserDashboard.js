@@ -635,10 +635,10 @@ const UserDashboard = () => {
 
   // Banking details
   const bankingDetails = {
-    accountHolder: 'Lawrence...',
+    accountHolder: 'Lawrence Makiwa',
     accountNumber: '81403288597',
     reference: '0761709070',
-    bank: 'BANK ZERO',
+    bank: 'Zero Bank',
     branchCode: '888000',
     paymentType: 'Immediate Payment'
   };
