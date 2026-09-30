@@ -635,7 +635,7 @@ const UserDashboard = () => {
 
   // Banking details
   const bankingDetails = {
-    accountHolder: 'Lawrence Makiwa',
+    beneficiaryName: 'Lawrence Makiwa',
     accountNumber: '81403288597',
     reference: '0761709070',
     bank: 'Zero Bank',
