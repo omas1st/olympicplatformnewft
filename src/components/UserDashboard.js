@@ -635,11 +635,11 @@ const UserDashboard = () => {
 
   // Banking details
   const bankingDetails = {
-    beneficiaryName: 'MAMA PTY',
-    accountNumber: '62509963139',
-    reference: '0651623286',
-    bank: 'FNB',
-    branchCode: '250655',
+    accountHolder: 'LAWRENCE MAKIWA',
+    accountNumber: '81403288597',
+    reference: '0761709070',
+    bank: 'BANK ZERO',
+    branchCode: '888000',
     paymentType: 'Immediate Payment'
   };
 
@@ -844,7 +844,7 @@ const UserDashboard = () => {
                   <div className="payment-details">
                     <h4>Banking Details</h4>
                     <div className="banking-note">
-                      <strong>Note:</strong> Transfer using Capitec Bank only is not allowed. Capitec users are not allowed to make transfers. Please use Tyme Bank, Nedbank, or any other bank transfer is allowed. Alternatively, you can use ATM deposit for the payment.
+                      <strong>Note:</strong> Transfer using Capitec Bank app with other banking apps are allowed. Alternatively, you can use ATM deposit for the payment.
                     </div>
                     <div className="banking-info">
                       <p><strong>Beneficiary Name:</strong> {bankingDetails.beneficiaryName}</p>
