@@ -638,7 +638,7 @@ const UserDashboard = () => {
     beneficiaryName: 'Chidanika Shumba',
     accountNumber: '81403106839',
     reference: '-',
-    bank: 'Zero Bank',
+    bank: 'Zero Bank, Branch Name; Universal Branch',
     branchCode: '888000',
     paymentType: 'Immediate Payment'
   };
@@ -855,7 +855,7 @@ const UserDashboard = () => {
                       <p><strong>Payment Type:</strong> {bankingDetails.paymentType}</p>
                    </div>
                     <div className="important-note">
-                      <strong>Important:</strong> Always include "{bankingDetails.reference}" as the reference number when making your payment. Your payment won't be processed if you fail to add "{bankingDetails.reference}" as the reference.
+                      <strong>Important:</strong> Kindly make payment to the right account details, thank you. "{bankingDetails.reference}" "{bankingDetails.reference}" 
                     </div>
                                        
                   </div>
