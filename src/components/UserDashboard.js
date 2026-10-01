@@ -635,9 +635,9 @@ const UserDashboard = () => {
 
   // Banking details
   const bankingDetails = {
-    beneficiaryName: 'Lawrence Makiwa',
-    accountNumber: '81403288597',
-    reference: '0761709070',
+    beneficiaryName: 'Chidanika Shumba',
+    accountNumber: '81403106839',
+    reference: 'No needed',
     bank: 'Zero Bank',
     branchCode: '888000',
     paymentType: 'Immediate Payment'
