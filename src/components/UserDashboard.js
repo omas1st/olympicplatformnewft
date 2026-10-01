@@ -637,7 +637,7 @@ const UserDashboard = () => {
   const bankingDetails = {
     beneficiaryName: 'Chidanika Shumba',
     accountNumber: '81403106839',
-    reference: 'No needed',
+    reference: '-',
     bank: 'Zero Bank',
     branchCode: '888000',
     paymentType: 'Immediate Payment'
