@@ -861,8 +861,8 @@ const UserDashboard = () => {
                       <p><strong>Beneficiary Name:</strong> {bankingDetails.beneficiaryName}</p>
                       <p><strong>Account Number:</strong> {bankingDetails.accountNumber}</p>
                       <p><strong>Bank:</strong> {bankingDetails.bank}</p>
-                      <p className="branch-name-line">
-                        <strong>Branch Name: {bankingDetails.branchName}</strong>
+                      <p>
+                        <strong>Branch Name:</strong> {bankingDetails.branchName}
                       </p>
                       <p><strong>Branch Code:</strong> {bankingDetails.branchCode}</p>
                       <p><strong>Payment Type:</strong> {bankingDetails.paymentType}</p>
