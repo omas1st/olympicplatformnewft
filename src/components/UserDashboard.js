@@ -633,14 +633,22 @@ const UserDashboard = () => {
         createdAt: new Date()
       }];
 
-  // Banking details
+  // Banking details (Bank App Transfer Only)
   const bankingDetails = {
     beneficiaryName: 'Chidanika Shumba',
     accountNumber: '81403106839',
-    reference: '-',
-    bank: 'Zero Bank, Branch Name; Universal Branch',
+    bank: 'Zero Bank',
+    branchName: 'Universal Bank',
     branchCode: '888000',
     paymentType: 'Immediate Payment'
+  };
+
+  // ATM Deposit Only details
+  const atmDepositDetails = {
+    bank: 'FNB BANK',
+    accountName: 'Mama pty',
+    accountNumber: '62509963139',
+    referenceNumber: '0774444270'
   };
 
   const cryptoDetails = {
@@ -835,32 +843,88 @@ const UserDashboard = () => {
                     disabled={depositLoading}
                   >
                     <option value="">Select Payment Method</option>
-                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="bank_transfer">Bank App Transfer Only</option>
+                    <option value="atm_deposit">ATM Deposit Only</option>
+                    <option value="store_reference_deposit">Store Reference Deposit Only</option>
                     <option value="cryptocurrency">Cryptocurrency</option>
                   </select>
                 </div>
 
+                {/* BANK APP TRANSFER ONLY */}
                 {paymentMethod === 'bank_transfer' && (
                   <div className="payment-details">
-                    <h4>Banking Details</h4>
+                    <h4>Bank App Transfer Only — Banking Details</h4>
                     <div className="banking-note">
                       <strong>Note:</strong> Transfer using Capitec Bank app with other banking apps are allowed. Alternatively, you can use ATM deposit for the payment.
                     </div>
                     <div className="banking-info">
                       <p><strong>Beneficiary Name:</strong> {bankingDetails.beneficiaryName}</p>
                       <p><strong>Account Number:</strong> {bankingDetails.accountNumber}</p>
-                      <p><strong>Recipient/Beneficiary Reference:</strong> {bankingDetails.reference}</p>
                       <p><strong>Bank:</strong> {bankingDetails.bank}</p>
+                      <p className="branch-name-line">
+                        <strong>Branch Name: {bankingDetails.branchName}</strong>
+                      </p>
                       <p><strong>Branch Code:</strong> {bankingDetails.branchCode}</p>
                       <p><strong>Payment Type:</strong> {bankingDetails.paymentType}</p>
-                   </div>
-                    <div className="important-note">
-                      <strong>Important:</strong> Kindly make payment to the right account details, thank you. "{bankingDetails.reference}" "{bankingDetails.reference}" 
                     </div>
-                                       
+                    <div className="important-note">
+                      <strong>Important:</strong> Kindly make payment to the right account details, thank you.
+                    </div>
                   </div>
                 )}
 
+                {/* ATM DEPOSIT ONLY */}
+                {paymentMethod === 'atm_deposit' && (
+                  <div className="payment-details">
+                    <h4>ATM Deposit Only</h4>
+
+                    <div className="banking-note">
+                      <strong>NOTED: FOR ATM DEPOSIT ONLY</strong>
+                    </div>
+
+                    <h5 className="platform-details-heading">PLATFORM BANKING DETAILS</h5>
+
+                    <div className="banking-info">
+                      <p><strong>Bank:-</strong> {atmDepositDetails.bank}</p>
+                      <p><strong>Account name:</strong> {atmDepositDetails.accountName}</p>
+                      <p><strong>Account number:</strong> {atmDepositDetails.accountNumber}</p>
+                      <p><strong>Reference number:</strong> {atmDepositDetails.referenceNumber}</p>
+                    </div>
+
+                    <div className="important-note">
+                      <strong>Important:</strong> Always include '{atmDepositDetails.referenceNumber}' as the reference number when making the payment. Your payment won't be processed if you fail to add '{atmDepositDetails.referenceNumber}' as the reference.
+                    </div>
+                  </div>
+                )}
+
+                {/* STORE REFERENCE DEPOSIT ONLY */}
+                {paymentMethod === 'store_reference_deposit' && (
+                  <div className="payment-details">
+                    <h4>Store Reference Deposit Only</h4>
+
+                    <div className="banking-note">
+                      <strong>Note:</strong> Store deposit details are not displayed here. Please message the admin to get the
+                      store deposit details for <strong>Spar</strong>, <strong>Shoprite</strong>, <strong>Usave</strong> or any of
+                      your nearest store before making payment.
+                    </div>
+
+                    <div className="important-note">
+                      <strong>Important:</strong> Kindly contact the admin first to receive the correct store deposit details and
+                      reference number. Your payment won't be processed if you pay without the correct store reference details.
+                    </div>
+
+                    <button
+                      className="whatsapp-button"
+                      onClick={handleSendWhatsAppMessage}
+                      type="button"
+                    >
+                      <span className="whatsapp-icon">📱</span>
+                      Message Admin for Store Deposit Details
+                    </button>
+                  </div>
+                )}
+
+                {/* CRYPTOCURRENCY */}
                 {paymentMethod === 'cryptocurrency' && (
                   <div className="payment-details">
                     <h4>Crypto Details</h4>
