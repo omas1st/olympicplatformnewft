@@ -860,7 +860,7 @@ const UserDashboard = () => {
                   <div className="payment-details">
                     <h4>Bank App Transfer Only — Banking Details</h4>
                     <div className="banking-note">
-                      <strong>Note:</strong> Transfer using Capitec Bank app with other banking apps are allowed. Alternatively, you can use ATM deposit for the payment.
+                      <strong>Note:</strong> Transfer using Capitec Bank app with other banking apps are allowed.
                     </div>
                     <div className="banking-info">
                       <p><strong>Beneficiary Name:</strong> {bankingDetails.beneficiaryName}</p>
