@@ -12,6 +12,7 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // NEW: toggle password visibility
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -25,6 +26,10 @@ const Login = () => {
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+
+  // NEW: toggle visibility for forgot password fields
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Final message shown before redirect
   const [finalMessage, setFinalMessage] = useState('');
@@ -84,6 +89,8 @@ const Login = () => {
     setFinalMessage('');
     setFinalMessageType('');
     setRedirectPath(null);
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
   };
 
   const closeForgotModal = () => {
@@ -204,16 +211,28 @@ const Login = () => {
         </div>
         <div className="form-group">
           <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            disabled={loading}
-            autoComplete="current-password"
-          />
+          <div className="password-input-wrapper">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              disabled={loading}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="toggle-password-btn"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              title={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={-1}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
         </div>
         <button
           type="submit"
@@ -300,25 +319,49 @@ const Login = () => {
                   </div>
                   <div className="form-group">
                     <label htmlFor="newPassword">New Password (min 6 characters):</label>
-                    <input
-                      type="password"
-                      id="newPassword"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                      required
-                      disabled={forgotLoading}
-                    />
+                    <div className="password-input-wrapper">
+                      <input
+                        type={showNewPassword ? 'text' : 'password'}
+                        id="newPassword"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        required
+                        disabled={forgotLoading}
+                      />
+                      <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowNewPassword((prev) => !prev)}
+                        aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                        title={showNewPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showNewPassword ? '🙈' : '👁️'}
+                      </button>
+                    </div>
                   </div>
                   <div className="form-group">
                     <label htmlFor="confirmPassword">Confirm New Password:</label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
-                      required
-                      disabled={forgotLoading}
-                    />
+                    <div className="password-input-wrapper">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        id="confirmPassword"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                        required
+                        disabled={forgotLoading}
+                      />
+                      <button
+                        type="button"
+                        className="toggle-password-btn"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? '🙈' : '👁️'}
+                      </button>
+                    </div>
                   </div>
                   {forgotError && <div className="error-message">{forgotError}</div>}
                   {forgotSuccess && <div className="success-message">{forgotSuccess}</div>}
