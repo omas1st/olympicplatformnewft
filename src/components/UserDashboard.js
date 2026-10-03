@@ -510,6 +510,11 @@ const UserDashboard = () => {
     window.open('https://wa.me/27603038557', '_blank');
   };
 
+  // NEW: Handler for the store agent WhatsApp (different number)
+  const handleStoreAgentWhatsApp = () => {
+    window.open('https://wa.me/27833298291', '_blank');
+  };
+
   const handleRefresh = async () => {
     console.log('Manual refresh triggered');
     setLoading(true);
@@ -903,23 +908,20 @@ const UserDashboard = () => {
                     <h4>Store Reference Deposit Only</h4>
 
                     <div className="banking-note">
-                      <strong>Note:</strong> Store deposit details are not displayed here. Please message the admin to get the
-                      store deposit details for <strong>Spar</strong>, <strong>Shoprite</strong>, <strong>Usave</strong> or any of
-                      your nearest store before making payment.
+                      <strong>Contact the agent below for any of the stores (SHOPRITE, BOXERS, USAVE, PEP, PICKNPAY, CHECKERS, SPAR……..) order creation details to use.</strong>
                     </div>
 
                     <div className="important-note">
-                      <strong>Important:</strong> Kindly contact the admin first to receive the correct store deposit details and
-                      reference number. Your payment won't be processed if you pay without the correct store reference details.
+                      <strong>Note:</strong> make sure you’re outside the store before you ask the platform agent to place orders for you because immediately the agent sent you the order details you have a 20mins maximum count down to done the payment or else the order will be automatically cancelled itself. Please be noted.
                     </div>
 
                     <button
                       className="whatsapp-button"
-                      onClick={handleSendWhatsAppMessage}
+                      onClick={handleStoreAgentWhatsApp}
                       type="button"
                     >
                       <span className="whatsapp-icon">📱</span>
-                      Message Admin for Store Deposit Details
+                      Message Store Agent via WhatsApp (+27 83 329 8291)
                     </button>
                   </div>
                 )}
