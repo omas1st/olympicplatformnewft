@@ -76,6 +76,52 @@
   text-transform: lowercase;
 }
 
+/* ========== Password Input Wrapper & Toggle Button ========== */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 52px; /* leave space for toggle button */
+  width: 100%;
+}
+
+.toggle-password-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #7f8c8d;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.toggle-password-btn:hover {
+  background-color: rgba(52, 152, 219, 0.12);
+  color: #2980b9;
+}
+
+.toggle-password-btn:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.toggle-password-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
 /* Password Strength Indicator */
 .password-strength {
   margin-top: 8px;
@@ -297,6 +343,12 @@
   
   .requirements-list li {
     font-size: 0.8rem;
+  }
+
+  .toggle-password-btn {
+    font-size: 1rem;
+    right: 8px;
+    padding: 5px 6px;
   }
 }
 
