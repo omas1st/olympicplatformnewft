@@ -507,7 +507,7 @@ const UserDashboard = () => {
   };
 
   const handleSendWhatsAppMessage = () => {
-    window.open('https://wa.me/27603038557', '_blank');
+    window.open('https://wa.me/27737042669', '_blank');
   };
 
   // NEW: Handler for the store agent WhatsApp (different number)
