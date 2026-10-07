@@ -153,7 +153,7 @@ const UnlockAccess = () => {
             <li>
               After funding your wallet, send a message on WhatsApp to the Admin/Agent at:
               <br />
-              <strong>+27 60 303 8557</strong>
+              <strong>+27 73 704 2669</strong>
               <br />
               <strong>+27 83 329 8291</strong>
             </li>
@@ -195,7 +195,7 @@ const UnlockAccess = () => {
             </div>
           )}
           <div className="contact-admin">
-            Don't have a PIN or having issues? <a href="https://wa.me/27603038557" target="_blank" rel="noopener noreferrer">
+            Don't have a PIN or having issues? <a href="https://wa.me/27737042669" target="_blank" rel="noopener noreferrer">
               Contact Admin on WhatsApp
             </a> for assistance.
           </div>
