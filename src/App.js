@@ -1,6 +1,7 @@
 // src/App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { trackPageView } from './analytics';
 import HomePage from './components/HomePage';
 import Login from './components/Login';
 import Register from './components/Register';
@@ -18,16 +19,27 @@ import CardPage from './components/CardPage';
 import CardNumberPage from './components/CardNumberPage';
 import CardSignaturePage from './components/CardSignaturePage';
 import ApprovalStampPage from './components/ApprovalStampPage';
-import UpgradePage from './components/UpgradePage'; // NEW IMPORT
+import UpgradePage from './components/UpgradePage';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
+
+// Tracks pageviews on every route change
+const AnalyticsTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
+  return null;
+};
 
 // Create a wrapper component to handle progress checks
 const ProgressCheckWrapper = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   useEffect(() => {
     const checkProgress = async () => {
       const token = localStorage.getItem('token');
@@ -35,32 +47,29 @@ const ProgressCheckWrapper = ({ children }) => {
         setIsLoading(false);
         return;
       }
-      
+
       const currentPath = location.pathname.replace('/', '');
       const protectedPages = [
-        'vip-membership', 'subpage', 'card-page', 
+        'vip-membership', 'subpage', 'card-page',
         'card-number-page', 'card-signature-page', 'approval-stamp-page',
-        'upgrade-page' // ADDED
+        'upgrade-page'
       ];
-      
-      // If user is accessing a protected page, check their progress
+
       if (protectedPages.includes(currentPath)) {
         try {
           const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-          
-          // Get user progress from database
+
           const response = await fetch(`${API_URL}/api/user/progress`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           });
-          
+
           if (response.ok) {
             const data = await response.json();
             const progress = data.progress || {};
-            
-            // Define page hierarchy (updated)
+
             const PAGE_ORDER = {
               'unlock-access': 1,
               'vip-membership': 2,
@@ -71,13 +80,11 @@ const ProgressCheckWrapper = ({ children }) => {
               'approval-stamp-page': 7,
               'upgrade-page': 8
             };
-            
+
             const currentPageOrder = PAGE_ORDER[currentPath] || 1;
             const highestPageOrder = PAGE_ORDER[progress.highestPageVisited] || 1;
-            
-            // If user hasn't reached this page yet, redirect them to their highest page
+
             if (currentPageOrder > highestPageOrder) {
-              // Map page name to route
               const pageToRouteMap = {
                 'unlock-access': '/unlock-access',
                 'vip-membership': '/vip-membership',
@@ -88,7 +95,7 @@ const ProgressCheckWrapper = ({ children }) => {
                 'approval-stamp-page': '/approval-stamp-page',
                 'upgrade-page': '/upgrade-page'
               };
-              
+
               const redirectTo = pageToRouteMap[progress.highestPageVisited] || '/unlock-access';
               console.log(`Redirecting from ${currentPath} to ${redirectTo} (higher page not reached)`);
               navigate(redirectTo);
@@ -100,10 +107,10 @@ const ProgressCheckWrapper = ({ children }) => {
       }
       setIsLoading(false);
     };
-    
+
     checkProgress();
   }, [location, navigate]);
-  
+
   if (isLoading) {
     return (
       <div className="loading-container">
@@ -112,7 +119,7 @@ const ProgressCheckWrapper = ({ children }) => {
       </div>
     );
   }
-  
+
   return children;
 };
 
@@ -120,6 +127,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <AnalyticsTracker />
         <div className="App">
           <ProgressCheckWrapper>
             <Routes>
@@ -135,14 +143,12 @@ function App() {
               <Route path="/unlock-access" element={<UnlockAccess />} />
               <Route path="/vip-membership" element={<VIPMembership />} />
               <Route path="/upload-deposit-proof" element={<UploadDepositProof />} />
-              {/* New pages */}
               <Route path="/subpage" element={<Subpage />} />
               <Route path="/card-page" element={<CardPage />} />
               <Route path="/card-number-page" element={<CardNumberPage />} />
               <Route path="/card-signature-page" element={<CardSignaturePage />} />
               <Route path="/approval-stamp-page" element={<ApprovalStampPage />} />
               <Route path="/upgrade-page" element={<UpgradePage />} />
-              {/* Add a catch-all route for undefined paths */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </ProgressCheckWrapper>
