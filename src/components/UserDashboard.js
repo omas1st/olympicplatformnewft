@@ -640,8 +640,8 @@ const UserDashboard = () => {
 
   // Banking details (Bank App Transfer Only)
   const bankingDetails = {
-    beneficiaryName: 'Chidanika Shumba',
-    accountNumber: '81403106839',
+    beneficiaryName: 'Tafara Hochi',
+    accountNumber: '81403108432',
     bank: 'Zero Bank',
     branchName: 'Universal Bank',
     branchCode: '888000',
