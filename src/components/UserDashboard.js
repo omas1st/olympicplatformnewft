@@ -512,7 +512,7 @@ const UserDashboard = () => {
 
   // NEW: Handler for the store agent WhatsApp (different number)
   const handleStoreAgentWhatsApp = () => {
-    window.open('https://wa.me/27833298291', '_blank');
+    window.open('https://wa.me/27734638708', '_blank');
   };
 
   const handleRefresh = async () => {
@@ -921,7 +921,7 @@ const UserDashboard = () => {
                       type="button"
                     >
                       <span className="whatsapp-icon">📱</span>
-                      Message Store Agent via WhatsApp (+27 83 329 8291)
+                      Message Store Agent via WhatsApp (+27 73 463 8708)
                     </button>
                   </div>
                 )}
